@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/rredkovich/amazingMafiaBotTG/authorization"
 	"github.com/rredkovich/amazingMafiaBotTG/types"
 	"log"
 	"os"
@@ -11,7 +12,7 @@ import (
 func main() {
 
 	fmt.Println("It's a mafia bot")
-	fmt.Println(types.Commissar)
+	fmt.Println(types.Doctor)
 
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TG_API_TOKEN"))
 	if err != nil {
@@ -33,9 +34,11 @@ func main() {
 		}
 
 		if update.Message.Text == "/start" {
-			game := types.Game{update.Message.Chat.ID, TGUser(update.Message.From)}
+			starter := types.TGUser(*update.Message.From)
+			game := types.Game{update.Message.Chat.ID, starter}
 			log.Printf("%+v\n", game)
 			log.Printf("%+v\n", game.GameInitiator)
+			fmt.Printf("User %v could modify game: %v\n", starter.FirstName, authorization.UserCouldModifyGame(&starter, &game))
 		}
 
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
@@ -43,6 +46,9 @@ func main() {
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("<b>Got</b> '%v'", update.Message.Text))
 		msg.ReplyToMessageID = update.Message.MessageID
 
-		bot.Send(msg)
+		_, err := bot.Send(msg)
+		if err != nil {
+			log.Printf("Got error on send! %+v\n", err)
+		}
 	}
 }
