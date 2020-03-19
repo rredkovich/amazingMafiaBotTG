@@ -35,10 +35,12 @@ func main() {
 
 		if update.Message.Text == "/start" {
 			starter := types.TGUser(*update.Message.From)
-			game := types.Game{update.Message.Chat.ID, starter}
+			//game := types.Game{update.Message.Chat.ID, starter, nil}
+			game := types.NewGame(update.Message.Chat.ID, &starter)
 			log.Printf("%+v\n", game)
 			log.Printf("%+v\n", game.GameInitiator)
-			fmt.Printf("User %v could modify game: %v\n", starter.FirstName, authorization.UserCouldModifyGame(&starter, &game))
+			fmt.Printf("User %v could modify game: %v\n", starter.FirstName, authorization.UserCouldModifyGame(&starter, game))
+			fmt.Printf("Starter user is in game: %v\n", game.UserInGame(&starter))
 		}
 
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
