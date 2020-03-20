@@ -3,13 +3,35 @@ package main
 import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/rredkovich/amazingMafiaBotTG/authorization"
 	"github.com/rredkovich/amazingMafiaBotTG/types"
 	"log"
 	"os"
 )
 
 func main() {
+
+	games := make(map[int64]*types.Game)
+
+	//ticker := time.NewTicker(time.Second)
+	//done := make(chan bool)
+
+	//go func() {
+	//	for {
+	//		select {
+	//		case <-done:
+	//			return
+	//		case t := <-ticker.C:
+	//			//fmt.Println("Tick at", t)
+	//			fmt.Printf("%+v, %v\n", games, t)
+	//			for _, game := range games {
+	//				// Dirty hack, how it will scale in case of hundred games
+	//				go game.Play()
+	//			}
+	//		}
+	//	}
+	//}()
+
+	messagesFromGames := make(chan types.GameMessage)
 
 	fmt.Println("It's a mafia bot")
 	fmt.Println(types.Doctor)
@@ -26,31 +48,51 @@ func main() {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 10
 
-	updates, err := bot.GetUpdatesChan(u)
+	updatesCh, err := bot.GetUpdatesChan(u)
 
-	for update := range updates {
-		if update.Message == nil { // ignore any non-Message Updates
-			continue
-		}
+	for {
+		select {
+		case msg := <-messagesFromGames:
+			log.Printf("Games: %+v\n", games)
+			fmt.Printf("Got GameMessage %+v\n", msg)
+			tgMsg := tgbotapi.NewMessage(msg.ChatID, msg.Message)
+			//msg.ReplyToMessageID = update.Message.MessageID
 
-		if update.Message.Text == "/start" {
-			starter := types.TGUser(*update.Message.From)
-			//game := types.Game{update.Message.Chat.ID, starter, nil}
-			game := types.NewGame(update.Message.Chat.ID, &starter)
-			log.Printf("%+v\n", game)
-			log.Printf("%+v\n", game.GameInitiator)
-			fmt.Printf("User %v could modify game: %v\n", starter.FirstName, authorization.UserCouldModifyGame(&starter, game))
-			fmt.Printf("Starter user is in game: %v\n", game.UserInGame(&starter))
-		}
+			_, err = bot.Send(tgMsg)
 
-		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+			if err != nil {
+				log.Printf("Got error on send! %+v\n", err)
+			}
+		case update := <-updatesCh:
+			log.Printf("Games: %+v\n", games)
+			if update.Message == nil {
+				continue
+			} // ignore any non-Message Updates
+			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+			if update.Message.Text == types.LaunchNewGame {
+				from := update.Message.From
+				starter := types.NewTGUser(from.ID, from.UserName, from.FirstName, from.LastName)
+				game := types.NewGame(update.Message.Chat.ID, starter, &messagesFromGames)
+				games[game.ChatID] = game
+				go game.Play()
+				log.Printf("Created game: %+v\n", game)
+			} else if update.Message.Text == types.EndGame {
+				game, ok := games[update.Message.Chat.ID]
+				if !ok {
+					continue
+				}
+				delete(games, game.ChatID)
+				game.Stop()
+				log.Printf("Stopped game: %+v\n", game)
 
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("<b>Got</b> '%v'", update.Message.Text))
-		msg.ReplyToMessageID = update.Message.MessageID
+				tgMsg := tgbotapi.NewMessage(game.ChatID, "The game has been stopped")
 
-		_, err := bot.Send(msg)
-		if err != nil {
-			log.Printf("Got error on send! %+v\n", err)
+				_, err = bot.Send(tgMsg)
+
+				if err != nil {
+					log.Printf("Got error on send! %+v\n", err)
+				}
+			}
 		}
 	}
 }

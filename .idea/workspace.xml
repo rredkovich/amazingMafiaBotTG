@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="f7dad795-4095-43e7-b98e-ee1bb0cc477e" name="Default Changelist" comment="Participants of the game">
+      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/types/game.go" beforeDir="false" afterPath="$PROJECT_DIR$/types/game.go" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Go File" />
+      </list>
+    </option>
+  </component>
+  <component name="GOROOT" path="/usr/lib/go" />
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GoLibraries">
+    <option name="indexEntireGoPath" value="false" />
+  </component>
+  <component name="ProjectId" id="1ZMXvkFWNfvlFDiihy38nQdpKsd" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="DefaultGoTemplateProperty" value="Go File" />
+    <property name="GO_FMT" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="go.import.settings.migrated" value="true" />
+    <property name="go.sdk.automatically.set" value="true" />
+    <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="restartRequiresConfirmation" value="false" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/authorization" />
+      <recent name="$PROJECT_DIR$/types" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Go Build.go build main.go">
+    <configuration name="go build main.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="amazingMafiaBotTG" />
+      <working_directory value="$PROJECT_DIR$/" />
+      <envs>
+        <env name="TG_API_TOKEN" value="1076167769:AAHqhFwoussdDUXKdjNCHZaiKT-Q74r2sp8" />
+      </envs>
+      <kind value="FILE" />
+      <filePath value="$PROJECT_DIR$/main.go" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestUserCouldModifyGame in github.com/rredkovich/amazingMafiaBotTG/authorization" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="amazingMafiaBotTG" />
+      <working_directory value="$PROJECT_DIR$/authorization" />
+      <framework value="gotest" />
+      <kind value="PACKAGE" />
+      <package value="github.com/rredkovich/amazingMafiaBotTG/authorization" />
+      <pattern value="^TestUserCouldModifyGame$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="authorization_test.go" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="amazingMafiaBotTG" />
+      <working_directory value="$PROJECT_DIR$/authorization" />
+      <framework value="gotest" />
+      <kind value="FILE" />
+      <filePath value="$PROJECT_DIR$/authorization/authorization_test.go" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Go Build.go build main.go" />
+      <item itemvalue="Go Test.authorization_test.go" />
+      <item itemvalue="Go Test.TestUserCouldModifyGame in github.com/rredkovich/amazingMafiaBotTG/authorization" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Go Build.go build main.go" />
+        <item itemvalue="Go Test.TestUserCouldModifyGame in github.com/rredkovich/amazingMafiaBotTG/authorization" />
+        <item itemvalue="Go Test.authorization_test.go" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="2" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <MESSAGE value="Sandbox" />
+    <MESSAGE value="Syntax fixes for subpackages" />
+    <MESSAGE value="Participants of the game" />
+    <option name="LAST_COMMIT_MESSAGE" value="Participants of the game" />
+  </component>
+  <component name="VgoProject">
+    <integration-enabled>true</integration-enabled>
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="1079" y="586" key="#Go_Modules" timestamp="1584651419411">
+      <screen x="0" y="0" width="2560" height="1440" />
+    </state>
+    <state x="1079" y="586" key="#Go_Modules/0.0.2560.1440@0.0.2560.1440" timestamp="1584651419411" />
+    <state x="913" y="431" key="#Inspections" timestamp="1584656029053">
+      <screen x="0" y="0" width="2560" height="1440" />
+    </state>
+    <state x="913" y="431" key="#Inspections/0.0.2560.1440@0.0.2560.1440" timestamp="1584656029053" />
+    <state x="743" y="407" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1584651286056">
+      <screen x="0" y="0" width="2560" height="1440" />
+    </state>
+    <state x="743" y="407" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.2560.1440@0.0.2560.1440" timestamp="1584651286056" />
+    <state x="854" y="306" width="849" height="839" key="CommitChangelistDialog2" timestamp="1584687702590">
+      <screen x="0" y="0" width="2560" height="1440" />
+    </state>
+    <state x="854" y="306" width="849" height="839" key="CommitChangelistDialog2/0.0.2560.1440@0.0.2560.1440" timestamp="1584687702590" />
+    <state x="1166" y="560" key="EnvironmentVariablesDialog" timestamp="1584651003424">
+      <screen x="0" y="0" width="2560" height="1440" />
+    </state>
+    <state x="1166" y="560" key="EnvironmentVariablesDialog/0.0.2560.1440@0.0.2560.1440" timestamp="1584651003424" />
+    <state width="2512" height="496" key="GridCell.Tab.0.bottom" timestamp="1584711883856">
+      <screen x="0" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2512" height="496" key="GridCell.Tab.0.bottom/0.0.2560.1440@0.0.2560.1440" timestamp="1584711883856" />
+    <state width="2512" height="496" key="GridCell.Tab.0.center" timestamp="1584711883856">
+      <screen x="0" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2512" height="496" key="GridCell.Tab.0.center/0.0.2560.1440@0.0.2560.1440" timestamp="1584711883856" />
+    <state width="2512" height="496" key="GridCell.Tab.0.left" timestamp="1584711883856">
+      <screen x="0" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2512" height="496" key="GridCell.Tab.0.left/0.0.2560.1440@0.0.2560.1440" timestamp="1584711883856" />
+    <state width="2512" height="496" key="GridCell.Tab.0.right" timestamp="1584711883856">
+      <screen x="0" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2512" height="496" key="GridCell.Tab.0.right/0.0.2560.1440@0.0.2560.1440" timestamp="1584711883856" />
+    <state width="2512" height="496" key="GridCell.Tab.1.bottom" timestamp="1584711883857">
+      <screen x="0" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2512" height="496" key="GridCell.Tab.1.bottom/0.0.2560.1440@0.0.2560.1440" timestamp="1584711883857" />
+    <state width="2512" height="496" key="GridCell.Tab.1.center" timestamp="1584711883857">
+      <screen x="0" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2512" height="496" key="GridCell.Tab.1.center/0.0.2560.1440@0.0.2560.1440" timestamp="1584711883857" />
+    <state width="2512" height="496" key="GridCell.Tab.1.left" timestamp="1584711883857">
+      <screen x="0" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2512" height="496" key="GridCell.Tab.1.left/0.0.2560.1440@0.0.2560.1440" timestamp="1584711883857" />
+    <state width="2512" height="496" key="GridCell.Tab.1.right" timestamp="1584711883857">
+      <screen x="0" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2512" height="496" key="GridCell.Tab.1.right/0.0.2560.1440@0.0.2560.1440" timestamp="1584711883857" />
+    <state x="879" y="485" key="Vcs.Push.Dialog.v2" timestamp="1584656182344">
+      <screen x="0" y="0" width="2560" height="1440" />
+    </state>
+    <state x="879" y="485" key="Vcs.Push.Dialog.v2/0.0.2560.1440@0.0.2560.1440" timestamp="1584656182344" />
+    <state x="808" y="425" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1584705104547">
+      <screen x="0" y="0" width="2560" height="1440" />
+    </state>
+    <state x="808" y="425" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/0.0.2560.1440@0.0.2560.1440" timestamp="1584705104547" />
+    <state x="942" y="351" width="672" height="678" key="search.everywhere.popup" timestamp="1584710053271">
+      <screen x="0" y="0" width="2560" height="1440" />
+    </state>
+    <state x="942" y="351" width="672" height="678" key="search.everywhere.popup/0.0.2560.1440@0.0.2560.1440" timestamp="1584710053271" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$USER_HOME$/gohome/pkg/mod/github.com/go-telegram-bot-api/telegram-bot-api@v4.6.4+incompatible/types.go</url>
+          <line>2</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/main.go</url>
+          <line>79</line>
+          <option name="timeStamp" value="24" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>
