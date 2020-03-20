@@ -6,9 +6,13 @@ import (
 	"time"
 )
 
-//type TGUser tgbotapi.User
+type Daytime int
 
-//type TGUserName string
+const (
+	Day Daytime = iota
+	Night
+)
+
 type TGUser struct {
 	ID        int
 	UserName  string
@@ -37,7 +41,7 @@ type SafeState struct {
 	mux        sync.Mutex
 }
 
-func (s *SafeState) SetPlay() {
+func (s *SafeState) SetStarted() {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 
@@ -45,7 +49,7 @@ func (s *SafeState) SetPlay() {
 	s.isStarting = false
 }
 
-func (s *SafeState) SetStart() {
+func (s *SafeState) SetPrepairing() {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 
@@ -53,7 +57,7 @@ func (s *SafeState) SetStart() {
 	s.isStarting = true
 }
 
-func (s *SafeState) SetStop() {
+func (s *SafeState) SetStopped() {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 
@@ -83,15 +87,15 @@ func (s *SafeState) SetNight() {
 	s.dayORNight = false
 }
 
-func (s *SafeState) GetDayNight() string {
+func (s *SafeState) GetDayNight() Daytime {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 
 	if s.dayORNight {
-		return "day"
+		return Day
 	}
 
-	return "night"
+	return Night
 }
 
 type Game struct {
@@ -100,18 +104,62 @@ type Game struct {
 	Members       map[string]*TGUser
 	messagesCh    *chan GameMessage
 	State         SafeState
+	ticker        Ticker
+}
+
+type Ticker struct {
+	mux                  sync.Mutex
+	value                uint32
+	tickStep             uint32
+	toAlarmValue         int32
+	lastBeforeAlarmValue int32
+}
+
+func (t *Ticker) Alarm() bool {
+	t.mux.Lock()
+	defer t.mux.Unlock()
+
+	return t.lastBeforeAlarmValue <= 0
+}
+
+func (t *Ticker) Tick() {
+	t.mux.Lock()
+	defer t.mux.Unlock()
+
+	t.value += t.tickStep
+	if t.toAlarmValue > 0 {
+		t.lastBeforeAlarmValue -= int32(t.tickStep)
+	}
+	time.Sleep(time.Duration(t.tickStep) * time.Second)
+}
+
+func (t *Ticker) RaiseAlarm(seconds uint32) {
+	t.mux.Lock()
+	defer t.mux.Unlock()
+
+	t.toAlarmValue = int32(seconds) // could be negative if tickStep != 1
+	t.lastBeforeAlarmValue = int32(seconds)
+}
+
+func (t *Ticker) GetValue() uint32 {
+	t.mux.Lock()
+	defer t.mux.Unlock()
+
+	return t.value
 }
 
 func NewGame(ChatID int64, GameInitiator *TGUser, messagesCh *chan GameMessage) *Game {
 	// TODO: test for game initiator added as a participant
 	members := make(map[string]*TGUser)
 	members[GameInitiator.UserName] = GameInitiator
+	ticker := Ticker{tickStep: 5}
 
 	return &Game{
 		ChatID:        ChatID,
 		GameInitiator: *GameInitiator,
 		Members:       members,
 		messagesCh:    messagesCh,
+		ticker:        ticker,
 	}
 }
 
@@ -122,19 +170,44 @@ func (g *Game) UserInGame(u *TGUser) bool {
 }
 
 func (g *Game) Play() {
-	g.State.SetStart()
+	g.State.SetPrepairing()
+	g.ticker.RaiseAlarm(10)
+	text := fmt.Sprintf("Starting game for %+v", g.ChatID)
 	for g.State.IsActive() {
+		if g.ticker.Alarm() {
+			g.State.SetStarted()
+			text = fmt.Sprintf("Game has started %+v", g.ChatID)
+			g.State.SetNight()
+		}
 		fmt.Printf("Playing game for chat %+v\n", g.ChatID)
-		msg := GameMessage{g.ChatID, fmt.Sprintf("Playing game for %+v", g.ChatID)}
+		msg := GameMessage{g.ChatID, text}
 		*g.messagesCh <- msg
-		time.Sleep(5 * time.Second)
+
+		g.ticker.Tick()
 	}
 }
 
 func (g *Game) Stop() {
 	// Do not try to send a message to messagesCh here, will crash the app
 	fmt.Printf("Game has been stopped %+v\n", g.ChatID)
-	g.State.SetStop()
+	g.State.SetStopped()
+}
+
+func (g *Game) UserCouldTalk(userID int) bool {
+	// TODO test everybody could talk while gathering people for the game
+	if g.State.isStarting {
+		return true
+	}
+
+	// TODO no one could talk if game is in progress and it is night
+	if g.State.GetDayNight() == Night {
+		return false
+	}
+
+	// TODO logic for person not in members of the game
+
+	return true
+	// TODO logic for dead, etc.
 }
 
 type CommandType string

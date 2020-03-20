@@ -92,6 +92,17 @@ func main() {
 				if err != nil {
 					log.Printf("Got error on send! %+v\n", err)
 				}
+			} else {
+				game, ok := games[update.Message.Chat.ID]
+				if !ok {
+					continue
+				}
+
+				if !game.UserCouldTalk(update.Message.From.ID) {
+					dcfg := tgbotapi.NewDeleteMessage(update.Message.Chat.ID, update.Message.MessageID)
+					bot.DeleteMessage(dcfg)
+				}
+
 			}
 		}
 	}
