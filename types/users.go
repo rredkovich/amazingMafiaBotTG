@@ -5,6 +5,7 @@ type TGUser struct {
 	UserName  string
 	FirstName string
 	LastName  string
+	Role      RoleType
 }
 
 func NewTGUser(id int, userName string, firstName string, lastName string) *TGUser {
