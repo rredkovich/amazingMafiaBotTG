@@ -2,9 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f7dad795-4095-43e7-b98e-ee1bb0cc477e" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/game/state.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/game/ticker.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/types/users.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/authorization/authorization.go" beforeDir="false" afterPath="$PROJECT_DIR$/authorization/authorization.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/authorization/authorization_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/authorization/authorization_test.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/types/game.go" beforeDir="false" afterPath="$PROJECT_DIR$/types/game.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/types/game.go" beforeDir="false" afterPath="$PROJECT_DIR$/game/game.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,6 +59,7 @@
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="restartRequiresConfirmation" value="false" />
+    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -111,7 +117,8 @@
     <MESSAGE value="Syntax fixes for subpackages" />
     <MESSAGE value="Participants of the game" />
     <MESSAGE value="Game start/end" />
-    <option name="LAST_COMMIT_MESSAGE" value="Game start/end" />
+    <MESSAGE value="Groups dedication" />
+    <option name="LAST_COMMIT_MESSAGE" value="Groups dedication" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
@@ -129,50 +136,54 @@
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
     <state x="743" y="407" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.2560.1440@0.0.2560.1440" timestamp="1584651286056" />
-    <state x="854" y="306" width="849" height="839" key="CommitChangelistDialog2" timestamp="1584712308550">
+    <state x="854" y="306" width="849" height="839" key="CommitChangelistDialog2" timestamp="1584740654660">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state x="854" y="306" width="849" height="839" key="CommitChangelistDialog2/0.0.2560.1440@0.0.2560.1440" timestamp="1584712308550" />
+    <state x="854" y="306" width="849" height="839" key="CommitChangelistDialog2/0.0.2560.1440@0.0.2560.1440" timestamp="1584740654660" />
     <state x="1166" y="560" key="EnvironmentVariablesDialog" timestamp="1584651003424">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
     <state x="1166" y="560" key="EnvironmentVariablesDialog/0.0.2560.1440@0.0.2560.1440" timestamp="1584651003424" />
-    <state width="2512" height="316" key="GridCell.Tab.0.bottom" timestamp="1584725030917">
+    <state width="2512" height="313" key="GridCell.Tab.0.bottom" timestamp="1584797457241">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="316" key="GridCell.Tab.0.bottom/0.0.2560.1440@0.0.2560.1440" timestamp="1584725030917" />
-    <state width="2512" height="316" key="GridCell.Tab.0.center" timestamp="1584725030917">
+    <state width="2512" height="313" key="GridCell.Tab.0.bottom/0.0.2560.1440@0.0.2560.1440" timestamp="1584797457241" />
+    <state width="2512" height="313" key="GridCell.Tab.0.center" timestamp="1584797457241">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="316" key="GridCell.Tab.0.center/0.0.2560.1440@0.0.2560.1440" timestamp="1584725030917" />
-    <state width="2512" height="316" key="GridCell.Tab.0.left" timestamp="1584725030916">
+    <state width="2512" height="313" key="GridCell.Tab.0.center/0.0.2560.1440@0.0.2560.1440" timestamp="1584797457241" />
+    <state width="2512" height="313" key="GridCell.Tab.0.left" timestamp="1584797457240">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="316" key="GridCell.Tab.0.left/0.0.2560.1440@0.0.2560.1440" timestamp="1584725030916" />
-    <state width="2512" height="316" key="GridCell.Tab.0.right" timestamp="1584725030917">
+    <state width="2512" height="313" key="GridCell.Tab.0.left/0.0.2560.1440@0.0.2560.1440" timestamp="1584797457240" />
+    <state width="2512" height="313" key="GridCell.Tab.0.right" timestamp="1584797457241">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="316" key="GridCell.Tab.0.right/0.0.2560.1440@0.0.2560.1440" timestamp="1584725030917" />
-    <state width="2512" height="316" key="GridCell.Tab.1.bottom" timestamp="1584725030917">
+    <state width="2512" height="313" key="GridCell.Tab.0.right/0.0.2560.1440@0.0.2560.1440" timestamp="1584797457241" />
+    <state width="2512" height="316" key="GridCell.Tab.1.bottom" timestamp="1584740660411">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="316" key="GridCell.Tab.1.bottom/0.0.2560.1440@0.0.2560.1440" timestamp="1584725030917" />
-    <state width="2512" height="316" key="GridCell.Tab.1.center" timestamp="1584725030917">
+    <state width="2512" height="316" key="GridCell.Tab.1.bottom/0.0.2560.1440@0.0.2560.1440" timestamp="1584740660411" />
+    <state width="2512" height="316" key="GridCell.Tab.1.center" timestamp="1584740660411">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="316" key="GridCell.Tab.1.center/0.0.2560.1440@0.0.2560.1440" timestamp="1584725030917" />
-    <state width="2512" height="316" key="GridCell.Tab.1.left" timestamp="1584725030917">
+    <state width="2512" height="316" key="GridCell.Tab.1.center/0.0.2560.1440@0.0.2560.1440" timestamp="1584740660411" />
+    <state width="2512" height="316" key="GridCell.Tab.1.left" timestamp="1584740660411">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="316" key="GridCell.Tab.1.left/0.0.2560.1440@0.0.2560.1440" timestamp="1584725030917" />
-    <state width="2512" height="316" key="GridCell.Tab.1.right" timestamp="1584725030917">
+    <state width="2512" height="316" key="GridCell.Tab.1.left/0.0.2560.1440@0.0.2560.1440" timestamp="1584740660411" />
+    <state width="2512" height="316" key="GridCell.Tab.1.right" timestamp="1584740660411">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="316" key="GridCell.Tab.1.right/0.0.2560.1440@0.0.2560.1440" timestamp="1584725030917" />
-    <state x="879" y="485" key="Vcs.Push.Dialog.v2" timestamp="1584712310011">
+    <state width="2512" height="316" key="GridCell.Tab.1.right/0.0.2560.1440@0.0.2560.1440" timestamp="1584740660411" />
+    <state x="773" y="384" key="SettingsEditor" timestamp="1584787576568">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state x="879" y="485" key="Vcs.Push.Dialog.v2/0.0.2560.1440@0.0.2560.1440" timestamp="1584712310011" />
+    <state x="773" y="384" key="SettingsEditor/0.0.2560.1440@0.0.2560.1440" timestamp="1584787576568" />
+    <state x="879" y="485" key="Vcs.Push.Dialog.v2" timestamp="1584740655696">
+      <screen x="0" y="0" width="2560" height="1440" />
+    </state>
+    <state x="879" y="485" key="Vcs.Push.Dialog.v2/0.0.2560.1440@0.0.2560.1440" timestamp="1584740655696" />
     <state x="808" y="425" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1584716083728">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>

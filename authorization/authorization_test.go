@@ -1,14 +1,14 @@
 package authorization
 
 import (
-	"github.com/rredkovich/amazingMafiaBotTG/types"
+	game2 "github.com/rredkovich/amazingMafiaBotTG/game"
 	"testing"
 )
 
 func TestUserCouldModifyGame(t *testing.T) {
 	userID := 42
-	user := types.TGUser{userID, "", "", "sanddog", "ru", false}
-	game := types.Game{
+	user := game2.TGUser{userID, "", "", "sanddog", "ru", false}
+	game := game2.Game{
 		ChatID:        10,
 		GameInitiator: user,
 	}

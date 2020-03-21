@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/rredkovich/amazingMafiaBotTG/game"
 	"github.com/rredkovich/amazingMafiaBotTG/types"
 	"log"
 	"os"
@@ -10,7 +11,7 @@ import (
 
 func main() {
 
-	games := make(map[int64]*types.Game)
+	games := make(map[int64]*game.Game)
 
 	//ticker := time.NewTicker(time.Second)
 	//done := make(chan bool)
@@ -31,7 +32,7 @@ func main() {
 	//	}
 	//}()
 
-	messagesFromGames := make(chan types.GameMessage)
+	messagesFromGames := make(chan game.GameMessage)
 
 	fmt.Println("It's a mafia bot")
 	fmt.Println(types.Doctor)
@@ -69,18 +70,27 @@ func main() {
 				continue
 			} // ignore any non-Message Updates
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-			if update.Message.Text == types.LaunchNewGame {
+			if update.Message.Text == game.LaunchNewGame {
+				// TODO test cannot start game if started
+				// TODO notify "game already started" if '/game' received again
+				_, ok := games[update.Message.Chat.ID]
+				if ok {
+					continue
+				}
+
 				from := update.Message.From
 				starter := types.NewTGUser(from.ID, from.UserName, from.FirstName, from.LastName)
-				game := types.NewGame(update.Message.Chat.ID, starter, &messagesFromGames)
+				game := game.NewGame(update.Message.Chat.ID, starter, &messagesFromGames)
 				games[game.ChatID] = game
 				go game.Play()
 				log.Printf("Created game: %+v\n", game)
-			} else if update.Message.Text == types.EndGame {
+
+			} else if update.Message.Text == game.EndGame {
 				game, ok := games[update.Message.Chat.ID]
 				if !ok {
 					continue
 				}
+				// TODO test game removed from games when '/endGame' received
 				delete(games, game.ChatID)
 				game.Stop()
 				log.Printf("Stopped game: %+v\n", game)
