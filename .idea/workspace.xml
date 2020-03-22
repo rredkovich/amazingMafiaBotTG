@@ -2,11 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f7dad795-4095-43e7-b98e-ee1bb0cc477e" name="Default Changelist" comment="Stubs for active game members actions">
-      <change afterPath="$PROJECT_DIR$/game/game_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/game.go" beforeDir="false" afterPath="$PROJECT_DIR$/game/game.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/game/state.go" beforeDir="false" afterPath="$PROJECT_DIR$/game/state.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -65,7 +61,7 @@
       <recent name="$PROJECT_DIR$/types" />
     </key>
   </component>
-  <component name="RunManager" selected="Go Build.go build main.go">
+  <component name="RunManager" selected="Go Test.go test amazingMafiaBotTG">
     <configuration name="go build main.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
       <module name="amazingMafiaBotTG" />
       <working_directory value="$PROJECT_DIR$/" />
@@ -85,14 +81,6 @@
       <pattern value="^TestUserCouldModifyGame$" />
       <method v="2" />
     </configuration>
-    <configuration name="authorization_test.go" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
-      <module name="amazingMafiaBotTG" />
-      <working_directory value="$PROJECT_DIR$/authorization" />
-      <framework value="gotest" />
-      <kind value="FILE" />
-      <filePath value="$PROJECT_DIR$/authorization/authorization_test.go" />
-      <method v="2" />
-    </configuration>
     <configuration name="game_test.go" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="amazingMafiaBotTG" />
       <working_directory value="$PROJECT_DIR$/game" />
@@ -103,18 +91,27 @@
       <filePath value="$PROJECT_DIR$/game/game_test.go" />
       <method v="2" />
     </configuration>
+    <configuration name="go test amazingMafiaBotTG" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="amazingMafiaBotTG" />
+      <working_directory value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <kind value="DIRECTORY" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/authorization/authorization_test.go" />
+      <method v="2" />
+    </configuration>
     <list>
       <item itemvalue="Go Build.go build main.go" />
-      <item itemvalue="Go Test.authorization_test.go" />
+      <item itemvalue="Go Test.go test amazingMafiaBotTG" />
       <item itemvalue="Go Test.TestUserCouldModifyGame in github.com/rredkovich/amazingMafiaBotTG/authorization" />
       <item itemvalue="Go Test.game_test.go" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Go Test.go test amazingMafiaBotTG" />
         <item itemvalue="Go Build.go build main.go" />
         <item itemvalue="Go Test.game_test.go" />
         <item itemvalue="Go Test.TestUserCouldModifyGame in github.com/rredkovich/amazingMafiaBotTG/authorization" />
-        <item itemvalue="Go Test.authorization_test.go" />
       </list>
     </recent_temporary>
   </component>
@@ -134,7 +131,8 @@
     <MESSAGE value="Accurate game state representation" />
     <MESSAGE value="Basic game loop with state transactions" />
     <MESSAGE value="Stubs for active game members actions" />
-    <option name="LAST_COMMIT_MESSAGE" value="Stubs for active game members actions" />
+    <MESSAGE value="Roles arranging, game termination if &lt; than 3 members" />
+    <option name="LAST_COMMIT_MESSAGE" value="Roles arranging, game termination if &lt; than 3 members" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
@@ -148,10 +146,10 @@
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
     <state x="913" y="431" key="#Inspections/0.0.2560.1440@0.0.2560.1440" timestamp="1584656029053" />
-    <state x="743" y="407" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1584651286056">
+    <state x="743" y="407" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1584913500923">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state x="743" y="407" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.2560.1440@0.0.2560.1440" timestamp="1584651286056" />
+    <state x="743" y="407" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.2560.1440@0.0.2560.1440" timestamp="1584913500923" />
     <state x="1111" y="475" key="#xdebugger.XInspectDialog" timestamp="1584883354323">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
@@ -160,10 +158,10 @@
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
     <state x="1042" y="493" key="#xdebugger.evaluate/0.0.2560.1440@0.0.2560.1440" timestamp="1584909611939" />
-    <state x="623" y="180" width="1339" height="1060" key="CommitChangelistDialog2" timestamp="1584912287249">
+    <state x="623" y="180" width="1339" height="1060" key="CommitChangelistDialog2" timestamp="1584913440184">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state x="623" y="180" width="1339" height="1060" key="CommitChangelistDialog2/0.0.2560.1440@0.0.2560.1440" timestamp="1584912287249" />
+    <state x="623" y="180" width="1339" height="1060" key="CommitChangelistDialog2/0.0.2560.1440@0.0.2560.1440" timestamp="1584913440184" />
     <state x="1166" y="560" key="EnvironmentVariablesDialog" timestamp="1584651003424">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
@@ -208,10 +206,10 @@
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
     <state x="773" y="384" key="SettingsEditor/0.0.2560.1440@0.0.2560.1440" timestamp="1584897423318" />
-    <state x="879" y="485" key="Vcs.Push.Dialog.v2" timestamp="1584901650610">
+    <state x="879" y="485" key="Vcs.Push.Dialog.v2" timestamp="1584913441403">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state x="879" y="485" key="Vcs.Push.Dialog.v2/0.0.2560.1440@0.0.2560.1440" timestamp="1584901650610" />
+    <state x="879" y="485" key="Vcs.Push.Dialog.v2/0.0.2560.1440@0.0.2560.1440" timestamp="1584913441403" />
     <state x="808" y="425" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1584903386771">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
