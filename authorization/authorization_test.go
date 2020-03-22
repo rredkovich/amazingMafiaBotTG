@@ -15,12 +15,12 @@ func TestUserCouldModifyGame(t *testing.T) {
 		LastName:  "",
 		Role:      "",
 	}
-	game := game.Game{
+	g := game.Game{
 		ChatID:        10,
 		GameInitiator: user,
 	}
 
-	couldDO := UserCouldModifyGame(&user, &game)
+	couldDO := UserCouldModifyGame(&user, &g)
 
 	if !couldDO {
 		t.Errorf("Expected user cannot do changes to a game")
@@ -28,7 +28,7 @@ func TestUserCouldModifyGame(t *testing.T) {
 
 	user.ID = 10
 
-	couldDO = UserCouldModifyGame(&user, &game)
+	couldDO = UserCouldModifyGame(&user, &g)
 
 	if couldDO {
 		t.Errorf("Not Expected user can do changes to a game")
