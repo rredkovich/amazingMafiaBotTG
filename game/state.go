@@ -5,7 +5,7 @@ import "sync"
 type State int
 
 const (
-	Prepairing State = iota
+	Preparing State = iota
 	Night
 	Day
 	DayVoting
@@ -18,6 +18,13 @@ type SafeState struct {
 	//dayORNight bool //true - day, false - night
 	state State
 	mux   sync.Mutex
+}
+
+func (s *SafeState) GetState() State {
+	s.mux.Lock()
+	defer s.mux.Unlock()
+
+	return s.state
 }
 
 func (s *SafeState) SetStarted() {
@@ -35,7 +42,7 @@ func (s *SafeState) SetPrepairing() {
 
 	//s.isPlaying = false
 	//s.isStarting = true
-	s.state = Prepairing
+	s.state = Preparing
 }
 
 func (s *SafeState) SetStopped() {
@@ -80,21 +87,31 @@ func (s *SafeState) IsItDay() bool {
 	return s.state == Day || s.state == DayVoting
 }
 
+func (s *SafeState) IsItNight() bool {
+	s.mux.Lock()
+	defer s.mux.Unlock()
+
+	return s.state == Night
+}
+
 func (s *SafeState) IsPlaying() bool {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 
-	return s.state != Prepairing || s.state != Stopped
+	return s.state != Preparing || s.state != Stopped
 }
 
 func (s *SafeState) HasStarted() bool {
-	return s.state != Prepairing
+	s.mux.Lock()
+	defer s.mux.Unlock()
+
+	return s.state != Preparing
 }
 
 /*
 MoveToNextState moves game through possible states:
 
-Prepairing -> Night
+Preparing -> Night
 Night -> Day
 Day -> DayVoting
 DayVoting -> Night
@@ -105,7 +122,7 @@ func (s *SafeState) MoveToNextState() {
 	defer s.mux.Unlock()
 
 	switch s.state {
-	case Prepairing:
+	case Preparing:
 		s.state = Night
 	case Night:
 		s.state = Day

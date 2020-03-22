@@ -42,15 +42,30 @@ func (g *Game) Play() {
 	g.State.SetPrepairing()
 	g.ticker.RaiseAlarm(10)
 	text := fmt.Sprintf("Начинаем мафейку для %+v", g.ChatTitle)
-	// TODO test that game goroutine exist when game is not Active anymore
-	for !g.State.IsStopped() {
-		if g.ticker.Alarm() {
-			g.State.SetStarted()
-			text = "Игра началась!"
-			g.State.SetNight()
-		}
 
-		g.SendGroupMessage(text)
+	// TODO test that game goroutine exist when game is not Active anymore
+
+	for !g.State.IsStopped() {
+		currentState := g.State.GetState()
+		if g.ticker.Alarm() {
+			if currentState == Preparing {
+				text = "Игра началась!"
+				g.SendGroupMessage(text)
+			}
+			g.State.MoveToNextState()
+			currentState = g.State.GetState()
+			switch currentState {
+			case Day:
+				text = "Наступил день"
+			case DayVoting:
+				text = "Настало время голосовать и наказать засранцев"
+			case Night:
+				text = "Наступила ночь"
+			}
+
+			g.SendGroupMessage(text)
+			g.ticker.RaiseAlarm(10)
+		}
 
 		g.ticker.Tick()
 	}
@@ -117,12 +132,12 @@ func (g *Game) UserInGame(u *types.TGUser) bool {
 
 func (g *Game) UserCouldTalk(userID int) bool {
 	// TODO test everybody could talk while gathering people for the game
-	if g.State.state == Prepairing {
+	if g.State.state == Preparing {
 		return true
 	}
 
 	// TODO no one could talk if game is in progress and it is night
-	if g.State.IsItDay() {
+	if g.State.IsItNight() {
 		return false
 	}
 
