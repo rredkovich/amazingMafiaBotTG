@@ -115,7 +115,7 @@ func main() {
 					game.Stop()
 					log.Printf("Stopped game: %+v\n", game)
 
-					tgMsg := tgbotapi.NewMessage(game.ChatID, "The game has been stopped")
+					tgMsg := tgbotapi.NewMessage(game.ChatID, "Игра остановлена")
 
 					_, err = bot.Send(tgMsg)
 
@@ -160,7 +160,13 @@ func main() {
 						continue
 					}
 
-					game.ExtendRegistration(30)
+					toStart, err := game.ExtendRegistration(30)
+
+					if err != nil {
+						bot.Send(tgbotapi.NewMessage(game.ChatID, fmt.Sprintf("%+v", err)))
+					} else {
+						bot.Send(tgbotapi.NewMessage(game.ChatID, fmt.Sprintf("Игра начнется через %+v секунд", toStart)))
+					}
 
 				}
 			case false:

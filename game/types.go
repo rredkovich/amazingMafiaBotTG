@@ -7,11 +7,6 @@ import (
 
 type Daytime int
 
-const (
-	Day Daytime = iota
-	Night
-)
-
 type CommandType string
 
 const (
@@ -46,3 +41,4 @@ type InGameCommand struct {
 type void struct{}
 
 var AddMemeberGameStarted = errors.New("Игра уже началась, невозможно присоединиться")
+var ExtendGameStarted = errors.New("Игра уже началась, невозможно продлить регистрацию")
