@@ -7,6 +7,7 @@ import (
 
 type Game struct {
 	ChatID          int64
+	ChatTitle       string
 	GameInitiator   types.TGUser
 	Members         map[string]*types.TGUser
 	DeadMembers     map[string]*types.TGUser
@@ -19,7 +20,7 @@ type Game struct {
 	ticker          Ticker
 }
 
-func NewGame(ChatID int64, GameInitiator *types.TGUser, messagesCh *chan GameMessage) *Game {
+func NewGame(ChatID int64, ChatTitle string, GameInitiator *types.TGUser, messagesCh *chan GameMessage) *Game {
 	// TODO: test for game initiator added as a participant
 	members := make(map[string]*types.TGUser)
 	members[GameInitiator.UserName] = GameInitiator
@@ -27,6 +28,7 @@ func NewGame(ChatID int64, GameInitiator *types.TGUser, messagesCh *chan GameMes
 
 	return &Game{
 		ChatID:          ChatID,
+		ChatTitle:       ChatTitle,
 		GameInitiator:   *GameInitiator,
 		Members:         members,
 		DeadMembers:     make(map[string]*types.TGUser),
@@ -39,12 +41,12 @@ func NewGame(ChatID int64, GameInitiator *types.TGUser, messagesCh *chan GameMes
 func (g *Game) Play() {
 	g.State.SetPrepairing()
 	g.ticker.RaiseAlarm(10)
-	text := fmt.Sprintf("Starting game for %+v", g.ChatID)
+	text := fmt.Sprintf("Начинаем мафейку для %+v", g.ChatTitle)
 	// TODO test that game goroutine exist when game is not Active anymore
 	for g.State.IsActive() {
 		if g.ticker.Alarm() {
 			g.State.SetStarted()
-			text = fmt.Sprintf("Game has started %+v", g.ChatID)
+			text = "Игра началась!"
 			g.State.SetNight()
 		}
 
@@ -56,8 +58,12 @@ func (g *Game) Play() {
 
 func (g *Game) Stop() {
 	// Do not try to send a message to messagesCh here, will crash the app
-	fmt.Printf("Game has been stopped %+v\n", g.ChatID)
+	fmt.Printf("Game has been stopped %+v\n", g.ChatTitle)
 	g.State.SetStopped()
+}
+
+func (g *Game) ExtendRegistration(seconds uint) {
+	g.ticker.PostponeAlarm(seconds)
 }
 
 // Sends message to group, for all players
@@ -76,6 +82,26 @@ func (g *Game) SendPrivateMessage(msg string, user *types.TGUser) {
 		Message: msg,
 	}
 	*g.messagesCh <- tgMsg
+}
+
+func (g *Game) AddMember(u *types.TGUser) error {
+	if g.State.isPlaying {
+		return AddMemeberGameStarted
+	}
+
+	_, ok := g.Members[u.UserName]
+
+	if !ok {
+		g.Members[u.UserName] = u
+		// Cannot send messages from goroutine while
+		/* g.SendPrivateMessage(fmt.Sprintf("Вы вступили в игру в '%+v'", g.ChatTitle), u)
+			g.SendGroupMessage(fmt.Sprintf("+1 в игру, теперь нас %+v", len(g.Members)))
+		} else {
+			 g.SendPrivateMessage("Уже в игрe!", u)
+		*/
+	}
+
+	return nil
 }
 
 // TODO: tests
@@ -97,8 +123,9 @@ func (g *Game) UserCouldTalk(userID int) bool {
 
 	// TODO logic for person not in members of the game
 
-	return true
 	// TODO logic for dead, etc.
+
+	return true
 }
 
 func (g *Game) KillMember(user *types.TGUser) {
@@ -142,17 +169,15 @@ func (g *Game) ProcessCommands() {
 	for _, cmd := range g.Commands {
 		switch cmd.Type {
 		case Kill:
-			msg := "Мафия выбрала жертву"
 			nowDead[cmd.Member.UserName] = cmd.Member
-			g.SendGroupMessage(msg)
+			g.SendGroupMessage("Мафия выбрала жертву")
 		case Lynch:
 			msg := fmt.Sprintf("Пользователь %+v будет повешен", cmd.Member.UserName)
 			nowDead[cmd.Member.UserName] = cmd.Member
 			g.SendGroupMessage(msg)
 		case Heal:
-			msg := "Доктор вышел на ночное дежурство"
 			delete(nowDead, cmd.Member.UserName)
-			g.SendGroupMessage(msg)
+			g.SendGroupMessage("Доктор вышел на ночное дежурство")
 		case Inspect:
 			msg := fmt.Sprintf("%+v - %+v", cmd.Member.UserName, cmd.Member.Role)
 			g.SendPrivateMessage(msg, g.Commissar)

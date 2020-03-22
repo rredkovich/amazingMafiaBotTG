@@ -1,6 +1,9 @@
 package game
 
-import "github.com/rredkovich/amazingMafiaBotTG/types"
+import (
+	"errors"
+	"github.com/rredkovich/amazingMafiaBotTG/types"
+)
 
 type Daytime int
 
@@ -12,12 +15,12 @@ const (
 type CommandType string
 
 const (
-	Start                  CommandType = "/start"
-	LaunchNewGame                      = "/game"
-	EndGame                            = "/endGame"
-	ExtendRegistrationTime             = "/extend"
-	Leave                              = "/leave"
-	Stats                              = "/statistics"
+	Start                  CommandType = "start"
+	LaunchNewGame                      = "game"
+	EndGame                            = "endGame"
+	ExtendRegistrationTime             = "extend"
+	Leave                              = "leave"
+	Stats                              = "statistics"
 )
 
 type GameMessage struct {
@@ -41,3 +44,5 @@ type InGameCommand struct {
 
 // for set data structure
 type void struct{}
+
+var AddMemeberGameStarted = errors.New("Игра уже началась, невозможно присоединиться")

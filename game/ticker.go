@@ -39,6 +39,15 @@ func (t *Ticker) RaiseAlarm(seconds uint32) {
 	t.lastBeforeAlarmValue = int32(seconds)
 }
 
+// PostponeAlarm moves alarm to seconds ahead
+func (t *Ticker) PostponeAlarm(seconds uint) {
+	t.mux.Lock()
+	defer t.mux.Unlock()
+
+	t.toAlarmValue += int32(seconds) // could be negative if tickStep != 1
+	t.lastBeforeAlarmValue += int32(seconds)
+}
+
 func (t *Ticker) GetValue() uint32 {
 	t.mux.Lock()
 	defer t.mux.Unlock()
