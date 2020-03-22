@@ -24,7 +24,7 @@ func NewGame(ChatID int64, ChatTitle string, GameInitiator *types.TGUser, messag
 	// TODO: test for game initiator added as a participant
 	members := make(map[string]*types.TGUser)
 	members[GameInitiator.UserName] = GameInitiator
-	ticker := Ticker{tickStep: 5}
+	ticker := Ticker{tickStep: 1}
 
 	return &Game{
 		ChatID:          ChatID,
@@ -35,13 +35,15 @@ func NewGame(ChatID int64, ChatTitle string, GameInitiator *types.TGUser, messag
 		GangsterMembers: make(map[string]*types.TGUser),
 		messagesCh:      messagesCh,
 		ticker:          ticker,
+		Doctor:          GameInitiator,
 	}
 }
 
 func (g *Game) Play() {
 	g.State.SetPrepairing()
 	g.ticker.RaiseAlarm(10)
-	text := fmt.Sprintf("Начинаем мафейку для %+v", g.ChatTitle)
+	//text := fmt.Sprintf("Начинаем мафейку для %+v", g.ChatTitle)
+	var text string
 
 	// TODO test that game goroutine exist when game is not Active anymore
 
@@ -52,6 +54,7 @@ func (g *Game) Play() {
 				text = "Игра началась!"
 				g.SendGroupMessage(text)
 			}
+			g.ProcessCommands()
 			g.State.MoveToNextState()
 			currentState = g.State.GetState()
 			switch currentState {
@@ -64,6 +67,7 @@ func (g *Game) Play() {
 			}
 
 			g.SendGroupMessage(text)
+			g.ProcessNewState()
 			g.ticker.RaiseAlarm(10)
 		}
 
@@ -210,9 +214,56 @@ func (g *Game) ProcessCommands() {
 		g.SendPrivateMessage(msg, user)
 	}
 
-	if len(nowDead) == 0 {
-		msg := "Удивительно, но этой ночью все выжили"
+	if len(nowDead) == 0 && len(g.Commands) != 0 {
+		msg := "Удивительно, но все выжили"
 		g.SendGroupMessage(msg)
 	}
+}
 
+// ProcessNewState does all logic which should be done on beginning of a State
+func (g *Game) ProcessNewState() {
+	switch g.State.GetState() {
+	case Preparing, Day:
+		return
+	case DayVoting:
+		g.StartVoteLynch()
+	case Night:
+		g.StartVoteCommissar()
+		g.StartVoteDoctor()
+		g.StartVoteGansters()
+	}
+}
+
+func (g *Game) StartVoteGansters() {
+	return
+}
+
+func (g *Game) StartVoteLynch() {
+	return
+}
+
+func (g *Game) StartVoteDoctor() {
+	if g.DoctorIsDead() {
+		return
+	}
+	g.SendPrivateMessage("Кого будем лечить?", g.Doctor)
+
+}
+
+func (g *Game) StartVoteCommissar() {
+	return
+	if g.CommissarIsDead() {
+		return
+	}
+	g.SendPrivateMessage("Кого будем провeрять", g.Commissar)
+}
+
+func (g *Game) DoctorIsDead() bool {
+	_, ok := g.DeadMembers[g.Doctor.UserName]
+	return ok
+}
+
+func (g *Game) CommissarIsDead() bool {
+	_, ok := g.DeadMembers[g.Commissar.UserName]
+	return ok
 }
