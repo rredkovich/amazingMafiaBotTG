@@ -3,6 +3,8 @@ package game
 import (
 	"fmt"
 	"github.com/rredkovich/amazingMafiaBotTG/types"
+	"math/rand"
+	"time"
 )
 
 type Game struct {
@@ -12,6 +14,7 @@ type Game struct {
 	Members         map[string]*types.TGUser
 	DeadMembers     map[string]*types.TGUser
 	GangsterMembers map[string]*types.TGUser
+	Don             *types.TGUser
 	Doctor          *types.TGUser
 	Commissar       *types.TGUser
 	Commands        []InGameCommand
@@ -35,7 +38,7 @@ func NewGame(ChatID int64, ChatTitle string, GameInitiator *types.TGUser, messag
 		GangsterMembers: make(map[string]*types.TGUser),
 		messagesCh:      messagesCh,
 		ticker:          ticker,
-		Doctor:          GameInitiator,
+		//Doctor:          GameInitiator,
 	}
 }
 
@@ -51,8 +54,15 @@ func (g *Game) Play() {
 		currentState := g.State.GetState()
 		if g.ticker.Alarm() {
 			if currentState == Preparing {
-				text = "Игра началась!"
-				g.SendGroupMessage(text)
+				// TODO !!! Game should be removed from list of games immideatly after that, memory leak !!!
+				if len(g.Members) < 3 {
+					g.State.SetStopped()
+					g.SendGroupMessage("Слишком мало людей, мафейка не состоится")
+					return
+				}
+				g.AssignRoles()
+				g.SendWelcomeMessages()
+				g.SendGroupMessage("Игра началась!")
 			}
 			g.ProcessCommands()
 			g.State.MoveToNextState()
@@ -108,6 +118,35 @@ func (g *Game) SendPrivateMessage(msg string, user *types.TGUser) {
 	*g.messagesCh <- tgMsg
 }
 
+// SendWelcomeMessages sends all users information about their roles
+func (g *Game) SendWelcomeMessages() {
+	// TODO set Role field in TGUser, use switch-case -> no need for continue here
+	for _, user := range g.Members {
+		if user == g.Commissar {
+			g.SendPrivateMessage("Вы коммисар, готовьте значок и пистолет", user)
+			continue
+		}
+
+		if user == g.Doctor {
+			g.SendPrivateMessage("Вы - доктор, готовьте чистые иглы и марлевые повязки", user)
+			continue
+		}
+
+		if user == g.Don {
+			g.SendPrivateMessage("Вы - дон, глава мафии, все гангстеры снимают шляпу", user)
+			continue
+		}
+
+		_, isUserGangsta := g.GangsterMembers[user.UserName]
+		if isUserGangsta {
+			g.SendPrivateMessage("Вы злодей и душегуб мафиози, доставайте длинный нож", user)
+			continue
+		}
+
+		g.SendPrivateMessage("Вы - мирный житель, держите ухо в остро и линчуйте нечистых на руку днем", user)
+	}
+}
+
 func (g *Game) AddMember(u *types.TGUser) error {
 	if g.State.HasStarted() {
 		return AddMemeberGameStarted
@@ -150,6 +189,46 @@ func (g *Game) UserCouldTalk(userID int) bool {
 	// TODO logic for dead, etc.
 
 	return true
+}
+
+func (g *Game) AssignRoles() {
+	rand.NewSource(time.Now().UnixNano())
+
+	randMax := len(g.Members)
+	memberNames := make([]string, 0, len(g.Members))
+	for k := range g.Members {
+		memberNames = append(memberNames, k)
+	}
+
+	doctorInd := rand.Intn(randMax)
+
+	g.Doctor = g.Members[memberNames[doctorInd]]
+
+	// TODO Dirty hack to assign commissar
+	g.Commissar = g.Doctor
+	for g.Commissar == g.Doctor {
+		commissarInd := rand.Intn(randMax)
+		g.Commissar = g.Members[memberNames[commissarInd]]
+	}
+
+	ganstersNum := len(g.Members) / 3
+
+	ganstersAllSet := false
+	// TODO Scary shit, could be infinite loop
+	for !ganstersAllSet {
+		gansterName := memberNames[rand.Intn(randMax)]
+		ganster := g.Members[gansterName]
+
+		if ganster == g.Doctor || ganster == g.Commissar {
+			continue
+		}
+
+		g.GangsterMembers[ganster.UserName] = ganster
+
+		if len(g.GangsterMembers) == ganstersNum {
+			ganstersAllSet = true
+		}
+	}
 }
 
 func (g *Game) KillMember(user *types.TGUser) {
@@ -251,7 +330,6 @@ func (g *Game) StartVoteDoctor() {
 }
 
 func (g *Game) StartVoteCommissar() {
-	return
 	if g.CommissarIsDead() {
 		return
 	}

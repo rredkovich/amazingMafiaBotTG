@@ -15,25 +15,6 @@ func main() {
 
 	games := make(map[int64]*game.Game)
 
-	//ticker := time.NewTicker(time.Second)
-	//done := make(chan bool)
-
-	//go func() {
-	//	for {
-	//		select {
-	//		case <-done:
-	//			return
-	//		case t := <-ticker.C:
-	//			//fmt.Println("Tick at", t)
-	//			fmt.Printf("%+v, %v\n", games, t)
-	//			for _, game := range games {
-	//				// Dirty hack, how it will scale in case of hundred games
-	//				go game.Play()
-	//			}
-	//		}
-	//	}
-	//}()
-
 	messagesFromGames := make(chan game.GameMessage)
 
 	fmt.Println("It's a mafia bot")
@@ -77,6 +58,20 @@ func main() {
 				switch game.CommandType(update.Message.Command()) {
 				case game.LaunchNewGame:
 					gameID := update.Message.Chat.ID
+
+					// TODO /test cannot start game if started
+					// TODO /notify "game already started" if '/game' received again
+					g, ok := games[gameID]
+					if ok && !g.State.IsStopped() {
+						tgMsg := tgbotapi.NewMessage(g.ChatID, "Уже есть активная игра")
+						_, err = bot.Send(tgMsg)
+						continue
+					}
+
+					if ok && g.State.IsStopped() {
+						delete(games, gameID)
+					}
+
 					gameIDStr := strconv.AppendInt([]byte(""), gameID, 10)
 					encodedGameID := base64.StdEncoding.EncodeToString([]byte(gameIDStr))
 
@@ -88,12 +83,6 @@ func main() {
 							),
 						),
 					)
-					// TODO /test cannot start game if started
-					// TODO /notify "game already started" if '/game' received again
-					_, ok := games[gameID]
-					if ok {
-						continue
-					}
 
 					from := update.Message.From
 					starter := types.NewTGUser(from.ID, from.UserName, from.FirstName, from.LastName)
