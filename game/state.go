@@ -98,7 +98,7 @@ func (s *SafeState) IsPlaying() bool {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 
-	return s.state != Preparing || s.state != Stopped
+	return s.state != Preparing //|| s.state != Stopped
 }
 
 func (s *SafeState) HasStarted() bool {

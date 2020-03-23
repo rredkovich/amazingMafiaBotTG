@@ -19,11 +19,17 @@ type Game struct {
 	Commissar       *types.TGUser
 	Commands        []InGameCommand
 	State           SafeState
+	commissarVote   *VoteCommand
+	doctorVote      *VoteCommand
+	mafiaVote       *VoteCommand
+	lynchVote       *VoteCommand
 	messagesCh      *chan GameMessage
+	votesCh         chan *VoteCommand
 	ticker          Ticker
 }
 
-func NewGame(ChatID int64, ChatTitle string, GameInitiator *types.TGUser, messagesCh *chan GameMessage) *Game {
+func NewGame(ChatID int64, ChatTitle string, GameInitiator *types.TGUser,
+	messagesCh *chan GameMessage, votesCh chan *VoteCommand) *Game {
 	// TODO: test for game initiator added as a participant
 	members := make(map[string]*types.TGUser)
 	members[GameInitiator.UserName] = GameInitiator
@@ -37,8 +43,8 @@ func NewGame(ChatID int64, ChatTitle string, GameInitiator *types.TGUser, messag
 		DeadMembers:     make(map[string]*types.TGUser),
 		GangsterMembers: make(map[string]*types.TGUser),
 		messagesCh:      messagesCh,
+		votesCh:         votesCh,
 		ticker:          ticker,
-		//Doctor:          GameInitiator,
 	}
 }
 
@@ -64,6 +70,8 @@ func (g *Game) Play() {
 				g.SendWelcomeMessages()
 				g.SendGroupMessage("Игра началась!")
 			}
+			endingState := g.State.GetState()
+			g.finalizeVotingFor(endingState)
 			g.ProcessCommands()
 			g.State.MoveToNextState()
 			currentState = g.State.GetState()
@@ -78,7 +86,7 @@ func (g *Game) Play() {
 
 			g.SendGroupMessage(text)
 			g.ProcessNewState()
-			g.ticker.RaiseAlarm(10)
+			g.ticker.RaiseAlarm(30)
 		}
 
 		g.ticker.Tick()
@@ -173,7 +181,7 @@ func (g *Game) UserInGame(u *types.TGUser) bool {
 	return ok
 }
 
-func (g *Game) UserCouldTalk(userID int) bool {
+func (g *Game) UserCouldTalk(userName string) bool {
 	// TODO test everybody could talk while gathering people for the game
 	if g.State.state == Preparing {
 		return true
@@ -184,9 +192,17 @@ func (g *Game) UserCouldTalk(userID int) bool {
 		return false
 	}
 
-	// TODO logic for person not in members of the game
+	// TODO logic for dead
+	_, dead := g.DeadMembers[userName]
+	if dead {
+		return false
+	}
 
-	// TODO logic for dead, etc.
+	// TODO logic for person not in members of the game
+	_, isMember := g.Members[userName]
+	if !isMember {
+		return false
+	}
 
 	return true
 }
@@ -314,11 +330,63 @@ func (g *Game) ProcessNewState() {
 }
 
 func (g *Game) StartVoteGansters() {
-	return
+	values := make([]*VoteCommandValue, 0, len(g.Members)-len(g.DeadMembers))
+	voters := make([]*types.TGUser, 0, len(g.GangsterMembers))
+	for _, m := range g.Members {
+		// will not add dead members
+		_, dead := g.DeadMembers[m.UserName]
+		if dead {
+			continue
+		}
+		_, gangster := g.GangsterMembers[m.UserName]
+		if gangster {
+			values = append(values,
+				&VoteCommandValue{fmt.Sprintf("🕴️ %+v", m.UserName), m.UserName})
+			voters = append(voters, m)
+		} else {
+			values = append(values,
+				&VoteCommandValue{m.UserName, m.UserName})
+		}
+	}
+
+	vcmd := VoteCommand{
+		GameChatID:       g.ChatID,
+		Action:           StartVoteAction,
+		VoteAvailability: VoteAvailabilityEnum.Mafia,
+		VoteText:         "Кто истечет кровью этой ночью?",
+		Voters:           voters,
+		Values:           values,
+	}
+
+	g.mafiaVote = &vcmd
+	g.votesCh <- &vcmd
 }
 
 func (g *Game) StartVoteLynch() {
-	return
+	values := make([]*VoteCommandValue, 0, len(g.Members)-len(g.DeadMembers))
+	voters := make([]*types.TGUser, 0, len(g.Members)-len(g.DeadMembers))
+	for _, m := range g.Members {
+		// will not add dead members
+		_, ok := g.DeadMembers[m.UserName]
+		if ok {
+			continue
+		}
+		values = append(values,
+			&VoteCommandValue{m.UserName, m.UserName})
+		voters = append(voters, m)
+	}
+
+	vcmd := VoteCommand{
+		GameChatID:       g.ChatID,
+		Action:           StartVoteAction,
+		VoteAvailability: VoteAvailabilityEnum.Lynch,
+		VoteText:         "Настало время полуденного линча",
+		Voters:           voters,
+		Values:           values,
+	}
+
+	g.lynchVote = &vcmd
+	g.votesCh <- &vcmd
 }
 
 func (g *Game) StartVoteDoctor() {
@@ -337,11 +405,32 @@ func (g *Game) StartVoteCommissar() {
 }
 
 func (g *Game) DoctorIsDead() bool {
-	_, ok := g.DeadMembers[g.Doctor.UserName]
-	return ok
+	_, dead := g.DeadMembers[g.Doctor.UserName]
+	return dead
 }
 
 func (g *Game) CommissarIsDead() bool {
-	_, ok := g.DeadMembers[g.Commissar.UserName]
-	return ok
+	_, dead := g.DeadMembers[g.Commissar.UserName]
+	return dead
+}
+
+func (g *Game) finalizeVotingFor(st State) {
+	switch st {
+	case Preparing, Day:
+		return
+	case DayVoting:
+		// general voting
+		return
+	case Night:
+		// doc voting
+		// kom voting
+		g.mafiaVote.Action = StopVoteAction
+		g.votesCh <- g.mafiaVote
+		for g.mafiaVote.GetResult() == nil {
+			time.Sleep(50 * time.Millisecond)
+		}
+		result := g.mafiaVote.GetResult()
+		g.KillMember(g.Members[result.Value])
+		return
+	}
 }
