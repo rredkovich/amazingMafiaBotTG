@@ -7,12 +7,34 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/rredkovich/amazingMafiaBotTG/game"
 	"github.com/rredkovich/amazingMafiaBotTG/types"
+	"github.com/segmentio/ksuid"
 	"log"
 	"os"
 	"strconv"
 )
 
+type TGVoteValue struct {
+	UUID   ksuid.KSUID
+	VoteID string
+	Value  string
+	User   *tgbotapi.User
+}
+
+func NewTGVoteValue(voteID string, value string) *TGVoteValue {
+	uuid := ksuid.New()
+	return &TGVoteValue{
+		VoteID: voteID,
+		Value:  value,
+		UUID:   uuid,
+	}
+}
+
+func (v *TGVoteValue) UUIDString() string {
+	return v.UUID.String()
+}
+
 type Vote struct {
+	ID               string
 	GameChatID       int64
 	VoteText         string
 	Action           game.VoteAction
@@ -23,8 +45,9 @@ type Vote struct {
 	Votes map[*tgbotapi.User]string
 }
 
-func NewVoteFromVoteCommand(vcmd *game.VoteCommand) *Vote {
+func NewVoteFromVoteCommand(vcmd *game.VoteCommand, ID string) *Vote {
 	return &Vote{
+		ID,
 		vcmd.GameChatID,
 		vcmd.VoteText,
 		vcmd.Action,
@@ -36,7 +59,7 @@ func NewVoteFromVoteCommand(vcmd *game.VoteCommand) *Vote {
 }
 
 // StartVote return map of ids of chats and messages which should be sent
-func (v *Vote) StartVote() []*tgbotapi.MessageConfig {
+func (v *Vote) StartVote(votes map[string]*TGVoteValue) []*tgbotapi.MessageConfig {
 	switch v.VoteAvailability {
 	case game.VoteAvailabilityEnum.Lynch:
 		messages := make([]*tgbotapi.MessageConfig, 0, len(v.Voters)+1) // +1 for group chat message
@@ -59,7 +82,11 @@ func (v *Vote) StartVote() []*tgbotapi.MessageConfig {
 				if value.Value == voter.UserName {
 					continue
 				}
-				key := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData(value.Text, value.Value)}
+
+				vote := NewTGVoteValue(v.ID, value.Value)
+				voteUUID := vote.UUIDString()
+				votes[voteUUID] = vote
+				key := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData(value.Text, voteUUID)}
 				kbdRows = append(kbdRows, key)
 			}
 			msg := tgbotapi.NewMessage(int64(voter.ID), "Кого желаем вздернуть?")
@@ -82,7 +109,10 @@ func (v *Vote) StartVote() []*tgbotapi.MessageConfig {
 				if value.Value == voter.UserName {
 					continue
 				}
-				row := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData(value.Text, value.Value)}
+				vote := NewTGVoteValue(v.ID, value.Value)
+				voteUUID := vote.UUIDString()
+				votes[voteUUID] = vote
+				row := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData(value.Text, voteUUID)}
 				kbdRows = append(kbdRows, row)
 			}
 			msg := tgbotapi.NewMessage(int64(voter.ID), "Кого желаем вздернуть?")
@@ -95,15 +125,7 @@ func (v *Vote) StartVote() []*tgbotapi.MessageConfig {
 	return nil
 }
 
-func (v *Vote) processVoteCallbackQuery(q *tgbotapi.CallbackQuery) {
-	return
-}
-
-func (v *Vote) processResults() *game.VoteCommandValue {
-	return v.Values[0]
-}
-
-func (v *Vote) Vote(u *tgbotapi.User, vote string) error {
+func (v *Vote) RegisterVote(u *tgbotapi.User, vote string) error {
 	// only voters could vote
 	fail := true
 	for _, voter := range v.Voters {
@@ -120,10 +142,42 @@ func (v *Vote) Vote(u *tgbotapi.User, vote string) error {
 	return nil
 }
 
+func (v *Vote) EndVote() (*game.VoteCommandValue, error) {
+	counters := make(map[string]int)
+
+	for _, vote := range v.Votes {
+		cntr, ok := counters[vote]
+		if !ok {
+			counters[vote] = 1
+		} else {
+			counters[vote] = cntr + 1
+		}
+	}
+
+	finalVote := ""
+	greaterCntr := 0
+
+	for vote, cntr := range counters {
+		if cntr > greaterCntr {
+			greaterCntr = cntr
+			finalVote = vote
+		}
+	}
+
+	for _, value := range v.Values {
+		if value.Value == finalVote {
+			return value, nil
+		}
+	}
+
+	return nil, errors.New("Cannot get result of a vote!!!")
+}
+
 func main() {
 
 	games := make(map[int64]*game.Game)
 	votes := make(map[string]*Vote)
+	tgVotes := make(map[string]*TGVoteValue)
 
 	messagesFromGames := make(chan game.GameMessage)
 	voteCommandsFromGames := make(chan *game.VoteCommand)
@@ -152,9 +206,9 @@ func main() {
 			switch cmd.Action {
 			case game.StartVoteAction:
 				fmt.Printf("Got vote command %+v\n", cmd)
-				vote := NewVoteFromVoteCommand(cmd)
+				vote := NewVoteFromVoteCommand(cmd, voteKey)
 				votes[voteKey] = vote
-				voteMsgs := vote.StartVote()
+				voteMsgs := vote.StartVote(tgVotes)
 				for _, voteMsg := range voteMsgs {
 					_, err := bot.Send(voteMsg)
 					if err != nil {
@@ -163,7 +217,12 @@ func main() {
 				}
 			case game.StopVoteAction:
 				vote := votes[voteKey]
-				result := vote.processResults()
+				result, err := vote.EndVote()
+				if err != nil {
+					fmt.Printf("Vote step into shit %+v", err)
+					delete(votes, voteKey)
+					continue
+				}
 				cmd.SetResult(result)
 				delete(votes, voteKey)
 			}
@@ -172,7 +231,7 @@ func main() {
 			log.Printf("Games: %+v\n", games)
 			fmt.Printf("Got GameMessage %+v\n", msg)
 			tgMsg := tgbotapi.NewMessage(msg.ChatID, msg.Message)
-			//msg.ReplyToMessageID = update.Message.MessageID
+			tgMsg.ParseMode = "html"
 
 			_, err = bot.Send(tgMsg)
 
@@ -185,6 +244,23 @@ func main() {
 			if update.Message == nil {
 				log.Printf("VOTE ENUM %s", game.VoteActionEnum.Start)
 				log.Printf("%+v\n", update.CallbackQuery)
+				tgVote, ok := tgVotes[update.CallbackQuery.Data]
+				if !ok {
+					fmt.Printf("Cannot get vote by callback query '%+v'", update.CallbackQuery.Data)
+					continue
+				}
+				vote := votes[tgVote.VoteID]
+
+				var answerText string
+				err := vote.RegisterVote(update.CallbackQuery.From, tgVote.Value)
+				if err != nil {
+					answerText = fmt.Sprintf("%+v", err)
+				} else {
+					answerText = "Ваш голос учтен"
+
+				}
+				bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "👌"))
+				bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, answerText))
 				continue
 			} // ignore any non-Message Updates
 
@@ -194,22 +270,6 @@ func main() {
 				switch game.CommandType(update.Message.Command()) {
 				case game.LaunchNewGame:
 					gameID := update.Message.Chat.ID
-
-					//// for text and value in VoteCommand create buttons
-					//var VoteKbd = tgbotapi.NewInlineKeyboardMarkup(
-					//	tgbotapi.NewInlineKeyboardRow(
-					//		tgbotapi.NewInlineKeyboardButtonData("3","3"),
-					//	),
-					//	tgbotapi.NewInlineKeyboardRow(
-					//		tgbotapi.NewInlineKeyboardButtonData("4","4"),
-					//		tgbotapi.NewInlineKeyboardButtonData("5","5"),
-					//	),
-					//)
-					//
-					//voteMsg := tgbotapi.NewMessage(gameID, "Голосование")
-					//voteMsg.ReplyMarkup = VoteKbd
-					//bot.Send(voteMsg)
-					//continue
 
 					// TODO /test cannot start game if started
 					// TODO /notify "game already started" if '/game' received again

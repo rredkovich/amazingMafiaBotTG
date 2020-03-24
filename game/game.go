@@ -289,9 +289,9 @@ func (g *Game) ProcessCommands() {
 		switch cmd.Type {
 		case Kill:
 			nowDead[cmd.Member.UserName] = cmd.Member
-			g.SendGroupMessage("Мафия выбрала жертву")
+			g.SendGroupMessage(fmt.Sprintf("<b>%+v</b> больше нет с нами, прощай...", cmd.Member.UserName))
 		case Lynch:
-			msg := fmt.Sprintf("Пользователь %+v будет повешен", cmd.Member.UserName)
+			msg := fmt.Sprintf("Пользователь <b>%+v</b> будет повешен", cmd.Member.UserName)
 			nowDead[cmd.Member.UserName] = cmd.Member
 			g.SendGroupMessage(msg)
 		case Heal:
