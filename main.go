@@ -57,11 +57,6 @@ func main() {
 				vote := votes[voteKey]
 				result := vote.EndVote()
 				log.Printf("Setting result '%+v' for vote %+v:'%+v'", result, voteKey, vote.VoteText)
-				//if err != nil {
-				//	fmt.Printf("Vote step into shit %+v", err)
-				//	delete(votes, voteKey)
-				//	continue
-				//}
 				cmd.SetResult(result, true)
 				delete(votes, voteKey)
 			}
@@ -97,17 +92,29 @@ func main() {
 				tgVote, ok := tgVotes[update.CallbackQuery.Data]
 				if !ok {
 					fmt.Printf("Cannot get vote by callback query '%+v'", update.CallbackQuery.Data)
+					bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "😱"))
+					toDelete := tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID)
+					bot.DeleteMessage(toDelete)
+					bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Вы попробовали проголосовать в уже несуществующем голосовании, но слишком поздно!"))
 					continue
 				}
 				vote := votes[tgVote.VoteID]
 				delete(tgVotes, update.CallbackQuery.Data)
+				// user tries to access old vote, already deleted from game
+				if vote == nil {
+					bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "😱"))
+					toDelete := tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID)
+					bot.DeleteMessage(toDelete)
+					bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Вы попробовали проголосовать в уже несуществующем голосовании, но слишком поздно!"))
+					continue
+				}
 
 				var answerText string
 				err := vote.RegisterVote(update.CallbackQuery.From, tgVote.Value)
 				if err != nil {
 					answerText = fmt.Sprintf("%+v", err)
 				} else {
-					answerText = fmt.Sprintf("Вы выбрали %+v", vote.)
+					answerText = fmt.Sprintf("Вы выбрали @%+v", tgVote.Value)
 
 				}
 				bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "👌"))
@@ -127,7 +134,7 @@ func main() {
 					msg.ParseMode = "html"
 					bot.Send(msg)
 				case game.VoteAvailabilityEnum.Lynch:
-					msg := tgbotapi.NewMessage(vote.GameChatID, fmt.Sprintf("@%+v проголосовал", update.CallbackQuery.From.UserName))
+					msg := tgbotapi.NewMessage(vote.GameChatID, fmt.Sprintf("@%+v выбрал @%+v", update.CallbackQuery.From.UserName, tgVote.Value))
 					msg.ParseMode = "html"
 					bot.Send(msg)
 				}
@@ -243,6 +250,8 @@ func main() {
 					}
 
 				}
+				toDelete := tgbotapi.NewDeleteMessage(update.Message.Chat.ID, update.Message.MessageID)
+				bot.DeleteMessage(toDelete)
 			case false:
 				game, ok := games[update.Message.Chat.ID]
 				if !ok {
