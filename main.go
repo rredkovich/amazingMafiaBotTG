@@ -14,18 +14,22 @@ import (
 )
 
 type TGVoteValue struct {
-	UUID   ksuid.KSUID
-	VoteID string
-	Value  string
-	User   *tgbotapi.User
+	UUID        ksuid.KSUID
+	VoteID      string
+	GroupChatID int64
+	Value       string
+	User        *tgbotapi.User
+	Avalability game.VoteAvailability
 }
 
-func NewTGVoteValue(voteID string, value string) *TGVoteValue {
+func NewTGVoteValue(voteID string, groupChatID int64, value string, av game.VoteAvailability) *TGVoteValue {
 	uuid := ksuid.New()
 	return &TGVoteValue{
-		VoteID: voteID,
-		Value:  value,
-		UUID:   uuid,
+		VoteID:      voteID,
+		GroupChatID: groupChatID,
+		Value:       value,
+		UUID:        uuid,
+		Avalability: av,
 	}
 }
 
@@ -83,7 +87,7 @@ func (v *Vote) StartVote(votes map[string]*TGVoteValue) []*tgbotapi.MessageConfi
 					continue
 				}
 
-				vote := NewTGVoteValue(v.ID, value.Value)
+				vote := NewTGVoteValue(v.ID, v.GameChatID, value.Value, v.VoteAvailability)
 				voteUUID := vote.UUIDString()
 				votes[voteUUID] = vote
 				key := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData(value.Text, voteUUID)}
@@ -105,11 +109,11 @@ func (v *Vote) StartVote(votes map[string]*TGVoteValue) []*tgbotapi.MessageConfi
 			for _, value := range v.Values {
 				// will note vote for himself
 				// value.Text here has mafia emoji
-				// TODO operate with userID's everywhere
+				// TODO operate with userID's everywhere?
 				if value.Value == voter.UserName {
 					continue
 				}
-				vote := NewTGVoteValue(v.ID, value.Value)
+				vote := NewTGVoteValue(v.ID, v.GameChatID, value.Value, game.VoteAvailabilityEnum.Mafia)
 				voteUUID := vote.UUIDString()
 				votes[voteUUID] = vote
 				row := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData(value.Text, voteUUID)}
@@ -119,6 +123,44 @@ func (v *Vote) StartVote(votes map[string]*TGVoteValue) []*tgbotapi.MessageConfi
 			msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(kbdRows...)
 			messages = append(messages, &msg)
 		}
+
+		return messages
+	case game.VoteAvailabilityEnum.Doctor:
+
+		kbdRows := make([][]tgbotapi.InlineKeyboardButton, 0, len(v.Values)) // will vote for himself
+		for _, value := range v.Values {
+			// will vote for himself
+			// value.Text here has mafia emoji
+			// TODO operate with userID's everywhere
+			vote := NewTGVoteValue(v.ID, v.GameChatID, value.Value, game.VoteAvailabilityEnum.Doctor)
+			voteUUID := vote.UUIDString()
+			votes[voteUUID] = vote
+			row := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData(value.Text, voteUUID)}
+			kbdRows = append(kbdRows, row)
+		}
+		msg := tgbotapi.NewMessage(int64(v.Voters[0].ID), v.VoteText)
+		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(kbdRows...)
+		messages := []*tgbotapi.MessageConfig{&msg}
+
+		return messages
+
+	case game.VoteAvailabilityEnum.Commissar:
+		kbdRows := make([][]tgbotapi.InlineKeyboardButton, 0, len(v.Values)-1) // will not vote for himself
+		for _, value := range v.Values {
+			// will not vote for himself
+			if value.Value == v.Voters[0].UserName {
+				continue
+			}
+			// TODO operate with userID's everywhere?
+			vote := NewTGVoteValue(v.ID, v.GameChatID, value.Value, game.VoteAvailabilityEnum.Commissar)
+			voteUUID := vote.UUIDString()
+			votes[voteUUID] = vote
+			row := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData(value.Text, voteUUID)}
+			kbdRows = append(kbdRows, row)
+		}
+		msg := tgbotapi.NewMessage(int64(v.Voters[0].ID), v.VoteText)
+		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(kbdRows...)
+		messages := []*tgbotapi.MessageConfig{&msg}
 
 		return messages
 	}
@@ -228,8 +270,8 @@ func main() {
 			}
 
 		case msg := <-messagesFromGames:
-			log.Printf("Games: %+v\n", games)
-			fmt.Printf("Got GameMessage %+v\n", msg)
+			//log.Printf("Games: %+v\n", games)
+			//log.Printf("Got GameMessage %+v\n", msg)
 			tgMsg := tgbotapi.NewMessage(msg.ChatID, msg.Message)
 			tgMsg.ParseMode = "html"
 
@@ -242,14 +284,15 @@ func main() {
 			log.Printf("Games: %+v\n", games)
 			// command execution from voting
 			if update.Message == nil {
-				log.Printf("VOTE ENUM %s", game.VoteActionEnum.Start)
-				log.Printf("%+v\n", update.CallbackQuery)
+				//log.Printf("VOTE ENUM %s", game.VoteActionEnum.Start)
+				//log.Printf("%+v\n", update.CallbackQuery)
 				tgVote, ok := tgVotes[update.CallbackQuery.Data]
 				if !ok {
 					fmt.Printf("Cannot get vote by callback query '%+v'", update.CallbackQuery.Data)
 					continue
 				}
 				vote := votes[tgVote.VoteID]
+				delete(tgVotes, update.CallbackQuery.Data)
 
 				var answerText string
 				err := vote.RegisterVote(update.CallbackQuery.From, tgVote.Value)
@@ -261,6 +304,25 @@ func main() {
 				}
 				bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "👌"))
 				bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, answerText))
+
+				switch vote.VoteAvailability {
+				case game.VoteAvailabilityEnum.Mafia:
+					msg := tgbotapi.NewMessage(vote.GameChatID, "<b>Мафия</b> выбрала жертву")
+					msg.ParseMode = "html"
+					bot.Send(msg)
+				case game.VoteAvailabilityEnum.Doctor:
+					msg := tgbotapi.NewMessage(vote.GameChatID, "<b>Доктор</b> достал бинты и мазь")
+					msg.ParseMode = "html"
+					bot.Send(msg)
+				case game.VoteAvailabilityEnum.Commissar:
+					msg := tgbotapi.NewMessage(vote.GameChatID, "<b>Комиссар Каттани</b> притворился петуньей в горшке у дома подозреваемого...")
+					msg.ParseMode = "html"
+					bot.Send(msg)
+				case game.VoteAvailabilityEnum.Lynch:
+					msg := tgbotapi.NewMessage(vote.GameChatID, fmt.Sprintf("@%+v проголосовал", update.CallbackQuery.From.UserName))
+					msg.ParseMode = "html"
+					bot.Send(msg)
+				}
 				continue
 			} // ignore any non-Message Updates
 
