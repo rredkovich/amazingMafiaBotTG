@@ -179,7 +179,7 @@ func (v *Vote) RegisterVote(u *tgbotapi.User, vote string) error {
 	return nil
 }
 
-// EndVote returs result of a vote. nil if noone has voted
+// EndVote returns result of a vote. nil if no one has voted
 func (v *Vote) EndVote() *game.VoteCommandValue {
 	counters := make(map[string]int)
 
@@ -194,11 +194,21 @@ func (v *Vote) EndVote() *game.VoteCommandValue {
 
 	finalVote := ""
 	greaterCntr := 0
+	secondLargeCntr := 0
 
 	for vote, cntr := range counters {
-		if cntr > greaterCntr {
+		if cntr >= greaterCntr {
+			secondLargeCntr = greaterCntr
 			greaterCntr = cntr
 			finalVote = vote
+		}
+	}
+
+	// we have same number of votes for two different options-Values
+	// cannot decide who won
+	if len(v.Votes) >= 2 {
+		if greaterCntr == secondLargeCntr {
+			return nil
 		}
 	}
 

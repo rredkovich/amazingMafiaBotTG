@@ -90,6 +90,7 @@ func (g *Game) Play(prepareTime uint32) {
 			case Day:
 				i := g.r.Intn(len(dayDescriptions))
 				g.SendGroupMessage(fmt.Sprintf("<b>Наступил день</b>\n%+v", dayDescriptions[i]))
+				g.SendGroupMessage(g.ListAlive())
 			case DayVoting:
 				// state message handled by day voting
 				break
@@ -99,7 +100,7 @@ func (g *Game) Play(prepareTime uint32) {
 			}
 
 			g.ProcessNewState()
-			g.ticker.RaiseAlarm(30)
+			g.ticker.RaiseAlarm(60)
 		}
 
 		g.ticker.Tick()
@@ -633,5 +634,22 @@ func (g *Game) GetResults() string {
 	}
 
 	text := fmt.Sprintf("Игра завершена \n%+v \n%+v \n%+v", winnerText, winnersList, defeatedList)
+	return text
+}
+
+func (g *Game) MembersCount() int {
+	return len(g.Members)
+}
+
+func (g *Game) ListAlive() string {
+	text := "Живые игроки:\n"
+
+	for _, member := range g.Members {
+		_, dead := g.DeadMembers[member.UserName]
+		if !dead {
+			text += fmt.Sprintf("- @%+v\n", member.UserName)
+		}
+	}
+
 	return text
 }

@@ -20,9 +20,6 @@ func main() {
 	messagesFromGames := make(chan game.GameMessage)
 	voteCommandsFromGames := make(chan *game.VoteCommand)
 
-	fmt.Println("It's a mafia bot")
-	fmt.Println(types.Doctor)
-
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TG_API_TOKEN"))
 	if err != nil {
 		panic(err) // You should add better error handling than this!
@@ -30,6 +27,7 @@ func main() {
 
 	bot.Debug = false // Has the library display every request and response.
 
+	log.Println("Mafia bot has been started")
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
@@ -41,7 +39,7 @@ func main() {
 		select {
 		case cmd := <-voteCommandsFromGames:
 			voteKey := fmt.Sprintf("%+v_%v", cmd.GameChatID, cmd.VoteAvailability)
-			fmt.Printf("Got vote command %+v\n", cmd)
+			log.Printf("Got vote command %+v\n", cmd)
 			switch cmd.Action {
 			case game.StartVoteAction:
 				vote := NewVoteFromVoteCommand(cmd, voteKey)
@@ -57,6 +55,11 @@ func main() {
 				vote := votes[voteKey]
 				result := vote.EndVote()
 				log.Printf("Setting result '%+v' for vote %+v:'%+v'", result, voteKey, vote.VoteText)
+				// TODO make a better solution to handle votes without final decision - when two options-Values have same votes amount
+				if result == nil && vote.VoteAvailability == game.VoteAvailabilityEnum.Lynch {
+					msg := tgbotapi.NewMessage(vote.GameChatID, "Жители-недожители не смогли определиться, мафия сможет, ночь уже близко")
+					bot.Send(msg)
+				}
 				cmd.SetResult(result, true)
 				delete(votes, voteKey)
 			}
@@ -86,7 +89,7 @@ func main() {
 		case update := <-updatesCh:
 			log.Printf("Games: %+v\n", games)
 			// command execution from voting
-			if update.Message == nil {
+			if update.CallbackQuery != nil {
 				//log.Printf("VOTE ENUM %s", game.VoteActionEnum.Start)
 				//log.Printf("%+v\n", update.CallbackQuery)
 				tgVote, ok := tgVotes[update.CallbackQuery.Data]
@@ -141,7 +144,12 @@ func main() {
 				toDelete := tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID)
 				bot.DeleteMessage(toDelete)
 				continue
-			} // ignore any non-Message Updates
+			}
+
+			// ignore any non-Message Updates
+			if update.Message == nil {
+				continue
+			}
 
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 			switch update.Message.IsCommand() {
@@ -177,13 +185,13 @@ func main() {
 
 					from := update.Message.From
 					starter := types.NewTGUser(from.ID, from.UserName, from.FirstName, from.LastName)
-					prepareTime := uint32(20)
+					prepareTime := uint32(45)
 					game := game.NewGame(update.Message.Chat.ID, update.Message.Chat.Title, starter,
 						&messagesFromGames, voteCommandsFromGames)
 					games[game.ChatID] = game
 					go game.Play(prepareTime)
 					log.Printf("Created game: %+v\n", game)
-					msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Ведется набор в игру \nстарт через %+v секунд", prepareTime))
+					msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Ведется набор в игру \nстарт через %+v секунд\n\n%+v", prepareTime, note))
 					msg.ReplyMarkup = kbd
 					bot.Send(msg)
 
@@ -234,6 +242,8 @@ func main() {
 					} else {
 						answer = tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Вы присоединились к игре в <b>%+v</b>", startedGame.ChatTitle))
 						answer.ParseMode = "html"
+						announcement := tgbotapi.NewMessage(startedGame.ChatID, fmt.Sprintf("@%+v в игре, всего %+v", from.UserName, startedGame.MembersCount()))
+						bot.Send(announcement)
 					}
 					bot.Send(answer)
 				case game.ExtendRegistrationTime:

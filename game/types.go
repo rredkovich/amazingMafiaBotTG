@@ -12,7 +12,7 @@ type CommandType string
 const (
 	Start                  CommandType = "start"
 	LaunchNewGame                      = "game"
-	EndGame                            = "endGame"
+	EndGame                            = "endgame"
 	ExtendRegistrationTime             = "extend"
 	Leave                              = "leave"
 	Stats                              = "statistics"
