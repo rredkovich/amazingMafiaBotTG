@@ -51,11 +51,10 @@ func NewGame(ChatID int64, ChatTitle string, GameInitiator *types.TGUser,
 	}
 }
 
-func (g *Game) Play() {
+func (g *Game) Play(prepareTime uint32) {
 
 	g.State.SetPrepairing()
-	g.ticker.RaiseAlarm(10)
-	//text := fmt.Sprintf("Начинаем мафейку для %+v", g.ChatTitle)
+	g.ticker.RaiseAlarm(prepareTime)
 
 	// TODO test that game goroutine exist when game is not Active anymore
 
@@ -100,7 +99,7 @@ func (g *Game) Play() {
 			}
 
 			g.ProcessNewState()
-			g.ticker.RaiseAlarm(20)
+			g.ticker.RaiseAlarm(30)
 		}
 
 		g.ticker.Tick()

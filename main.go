@@ -177,12 +177,13 @@ func main() {
 
 					from := update.Message.From
 					starter := types.NewTGUser(from.ID, from.UserName, from.FirstName, from.LastName)
+					prepareTime := uint32(20)
 					game := game.NewGame(update.Message.Chat.ID, update.Message.Chat.Title, starter,
 						&messagesFromGames, voteCommandsFromGames)
 					games[game.ChatID] = game
-					go game.Play()
+					go game.Play(prepareTime)
 					log.Printf("Created game: %+v\n", game)
-					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Ведется набор в игру")
+					msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Ведется набор в игру \nстарт через %+v секунд", prepareTime))
 					msg.ReplyMarkup = kbd
 					bot.Send(msg)
 
