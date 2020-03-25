@@ -2,218 +2,14 @@ package main
 
 import (
 	"encoding/base64"
-	"errors"
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/rredkovich/amazingMafiaBotTG/game"
 	"github.com/rredkovich/amazingMafiaBotTG/types"
-	"github.com/segmentio/ksuid"
 	"log"
 	"os"
 	"strconv"
 )
-
-type TGVoteValue struct {
-	UUID        ksuid.KSUID
-	VoteID      string
-	GroupChatID int64
-	Value       string
-	User        *tgbotapi.User
-	Avalability game.VoteAvailability
-}
-
-func NewTGVoteValue(voteID string, groupChatID int64, value string, av game.VoteAvailability) *TGVoteValue {
-	uuid := ksuid.New()
-	return &TGVoteValue{
-		VoteID:      voteID,
-		GroupChatID: groupChatID,
-		Value:       value,
-		UUID:        uuid,
-		Avalability: av,
-	}
-}
-
-func (v *TGVoteValue) UUIDString() string {
-	return v.UUID.String()
-}
-
-type Vote struct {
-	ID               string
-	GameChatID       int64
-	VoteText         string
-	Action           game.VoteAction
-	VoteAvailability game.VoteAvailability
-	Voters           []*types.TGUser
-	Values           []*game.VoteCommandValue
-	//Votes map[*types.TGUser]*game.VoteCommandValue
-	Votes map[*tgbotapi.User]string
-}
-
-func NewVoteFromVoteCommand(vcmd *game.VoteCommand, ID string) *Vote {
-	return &Vote{
-		ID,
-		vcmd.GameChatID,
-		vcmd.VoteText,
-		vcmd.Action,
-		vcmd.VoteAvailability,
-		vcmd.Voters,
-		vcmd.Values,
-		make(map[*tgbotapi.User]string),
-	}
-}
-
-// StartVote return map of ids of chats and messages which should be sent
-func (v *Vote) StartVote(votes map[string]*TGVoteValue) []*tgbotapi.MessageConfig {
-	switch v.VoteAvailability {
-	case game.VoteAvailabilityEnum.Lynch:
-		messages := make([]*tgbotapi.MessageConfig, 0, len(v.Voters)+1) // +1 for group chat message
-
-		// message to group chat regarding lynch
-		groupMsg := tgbotapi.NewMessage(v.GameChatID, v.VoteText)
-		kbd := tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonURL("Голосовать", "https://t.me/amafia_bot"),
-			),
-		)
-		groupMsg.ReplyMarkup = kbd
-		messages = append(messages, &groupMsg)
-
-		// individual messages with buttons for every voter
-		for _, voter := range v.Voters {
-			kbdRows := make([][]tgbotapi.InlineKeyboardButton, 0, len(v.Values)-1) // will not vote for himself
-			for _, value := range v.Values {
-				// will note vote for himself
-				if value.Value == voter.UserName {
-					continue
-				}
-
-				vote := NewTGVoteValue(v.ID, v.GameChatID, value.Value, v.VoteAvailability)
-				voteUUID := vote.UUIDString()
-				votes[voteUUID] = vote
-				key := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData(value.Text, voteUUID)}
-				kbdRows = append(kbdRows, key)
-			}
-			msg := tgbotapi.NewMessage(int64(voter.ID), "Кого желаем вздернуть?")
-			msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(kbdRows...)
-			messages = append(messages, &msg)
-		}
-
-		return messages
-
-	case game.VoteAvailabilityEnum.Mafia:
-		messages := make([]*tgbotapi.MessageConfig, 0, len(v.Voters))
-
-		// individual messages with buttons for every voter
-		for _, voter := range v.Voters {
-			kbdRows := make([][]tgbotapi.InlineKeyboardButton, 0, len(v.Values)-1) // will not vote for himself
-			for _, value := range v.Values {
-				// will note vote for himself
-				// value.Text here has mafia emoji
-				// TODO operate with userID's everywhere?
-				if value.Value == voter.UserName {
-					continue
-				}
-				vote := NewTGVoteValue(v.ID, v.GameChatID, value.Value, game.VoteAvailabilityEnum.Mafia)
-				voteUUID := vote.UUIDString()
-				votes[voteUUID] = vote
-				row := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData(value.Text, voteUUID)}
-				kbdRows = append(kbdRows, row)
-			}
-			msg := tgbotapi.NewMessage(int64(voter.ID), "Кого желаем вздернуть?")
-			msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(kbdRows...)
-			messages = append(messages, &msg)
-		}
-
-		return messages
-	case game.VoteAvailabilityEnum.Doctor:
-
-		kbdRows := make([][]tgbotapi.InlineKeyboardButton, 0, len(v.Values)) // will vote for himself
-		for _, value := range v.Values {
-			// will vote for himself
-			// value.Text here has mafia emoji
-			// TODO operate with userID's everywhere
-			vote := NewTGVoteValue(v.ID, v.GameChatID, value.Value, game.VoteAvailabilityEnum.Doctor)
-			voteUUID := vote.UUIDString()
-			votes[voteUUID] = vote
-			row := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData(value.Text, voteUUID)}
-			kbdRows = append(kbdRows, row)
-		}
-		msg := tgbotapi.NewMessage(int64(v.Voters[0].ID), v.VoteText)
-		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(kbdRows...)
-		messages := []*tgbotapi.MessageConfig{&msg}
-
-		return messages
-
-	case game.VoteAvailabilityEnum.Commissar:
-		kbdRows := make([][]tgbotapi.InlineKeyboardButton, 0, len(v.Values)-1) // will not vote for himself
-		for _, value := range v.Values {
-			// will not vote for himself
-			if value.Value == v.Voters[0].UserName {
-				continue
-			}
-			// TODO operate with userID's everywhere?
-			vote := NewTGVoteValue(v.ID, v.GameChatID, value.Value, game.VoteAvailabilityEnum.Commissar)
-			voteUUID := vote.UUIDString()
-			votes[voteUUID] = vote
-			row := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData(value.Text, voteUUID)}
-			kbdRows = append(kbdRows, row)
-		}
-		msg := tgbotapi.NewMessage(int64(v.Voters[0].ID), v.VoteText)
-		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(kbdRows...)
-		messages := []*tgbotapi.MessageConfig{&msg}
-
-		return messages
-	}
-	return nil
-}
-
-func (v *Vote) RegisterVote(u *tgbotapi.User, vote string) error {
-	// only voters could vote
-	fail := true
-	for _, voter := range v.Voters {
-		if voter.ID == u.ID {
-			fail = false
-			break
-		}
-	}
-	if fail {
-		return errors.New("Голосование не для вас")
-	}
-
-	v.Votes[u] = vote
-	return nil
-}
-
-func (v *Vote) EndVote() (*game.VoteCommandValue, error) {
-	counters := make(map[string]int)
-
-	for _, vote := range v.Votes {
-		cntr, ok := counters[vote]
-		if !ok {
-			counters[vote] = 1
-		} else {
-			counters[vote] = cntr + 1
-		}
-	}
-
-	finalVote := ""
-	greaterCntr := 0
-
-	for vote, cntr := range counters {
-		if cntr > greaterCntr {
-			greaterCntr = cntr
-			finalVote = vote
-		}
-	}
-
-	for _, value := range v.Values {
-		if value.Value == finalVote {
-			return value, nil
-		}
-	}
-
-	return nil, errors.New("Cannot get result of a vote!!!")
-}
 
 func main() {
 
@@ -232,7 +28,7 @@ func main() {
 		panic(err) // You should add better error handling than this!
 	}
 
-	bot.Debug = true // Has the library display every request and response.
+	bot.Debug = false // Has the library display every request and response.
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
@@ -245,9 +41,9 @@ func main() {
 		select {
 		case cmd := <-voteCommandsFromGames:
 			voteKey := fmt.Sprintf("%+v_%v", cmd.GameChatID, cmd.VoteAvailability)
+			fmt.Printf("Got vote command %+v\n", cmd)
 			switch cmd.Action {
 			case game.StartVoteAction:
-				fmt.Printf("Got vote command %+v\n", cmd)
 				vote := NewVoteFromVoteCommand(cmd, voteKey)
 				votes[voteKey] = vote
 				voteMsgs := vote.StartVote(tgVotes)
@@ -259,13 +55,14 @@ func main() {
 				}
 			case game.StopVoteAction:
 				vote := votes[voteKey]
-				result, err := vote.EndVote()
-				if err != nil {
-					fmt.Printf("Vote step into shit %+v", err)
-					delete(votes, voteKey)
-					continue
-				}
-				cmd.SetResult(result)
+				result := vote.EndVote()
+				log.Printf("Setting result '%+v' for vote %+v:'%+v'", result, voteKey, vote.VoteText)
+				//if err != nil {
+				//	fmt.Printf("Vote step into shit %+v", err)
+				//	delete(votes, voteKey)
+				//	continue
+				//}
+				cmd.SetResult(result, true)
 				delete(votes, voteKey)
 			}
 
@@ -280,6 +77,17 @@ func main() {
 			if err != nil {
 				log.Printf("Got error on send! %+v\n", err)
 			}
+
+			// handling case when game for chat has been stopped and we received last message with results
+			game, ok := games[msg.ChatID]
+			if !ok {
+				continue
+			}
+
+			if game.State.IsStopped() {
+				delete(games, msg.ChatID)
+			}
+
 		case update := <-updatesCh:
 			log.Printf("Games: %+v\n", games)
 			// command execution from voting
@@ -299,7 +107,7 @@ func main() {
 				if err != nil {
 					answerText = fmt.Sprintf("%+v", err)
 				} else {
-					answerText = "Ваш голос учтен"
+					answerText = fmt.Sprintf("Вы выбрали %+v", vote.)
 
 				}
 				bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "👌"))
@@ -323,6 +131,8 @@ func main() {
 					msg.ParseMode = "html"
 					bot.Send(msg)
 				}
+				toDelete := tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID)
+				bot.DeleteMessage(toDelete)
 				continue
 			} // ignore any non-Message Updates
 

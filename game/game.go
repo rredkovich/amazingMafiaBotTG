@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	"github.com/rredkovich/amazingMafiaBotTG/types"
+	"log"
 	"math/rand"
 	"time"
 )
@@ -26,6 +27,7 @@ type Game struct {
 	messagesCh      *chan GameMessage
 	votesCh         chan *VoteCommand
 	ticker          Ticker
+	r               *rand.Rand
 }
 
 func NewGame(ChatID int64, ChatTitle string, GameInitiator *types.TGUser,
@@ -45,14 +47,15 @@ func NewGame(ChatID int64, ChatTitle string, GameInitiator *types.TGUser,
 		messagesCh:      messagesCh,
 		votesCh:         votesCh,
 		ticker:          ticker,
+		r:               rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
 }
 
 func (g *Game) Play() {
+
 	g.State.SetPrepairing()
 	g.ticker.RaiseAlarm(10)
 	//text := fmt.Sprintf("Начинаем мафейку для %+v", g.ChatTitle)
-	var text string
 
 	// TODO test that game goroutine exist when game is not Active anymore
 
@@ -71,27 +74,33 @@ func (g *Game) Play() {
 				g.SendGroupMessage("Игра началась!")
 			}
 			endingState := g.State.GetState()
+			log.Printf("Ending state %+v for game %+v ", g.State.GetState(), g.ChatID)
 			g.finalizeVotingFor(endingState)
 			g.ProcessCommands()
+			ended := g.TryToEnd()
+
+			if ended {
+				results := g.GetResults()
+				g.SendGroupMessage(results)
+				return
+			}
+
 			g.State.MoveToNextState()
 			currentState = g.State.GetState()
 			switch currentState {
 			case Day:
-				i := rand.Intn(len(dayDescriptions))
-				text = fmt.Sprintf("<b>Наступил день</b>\n%+v", dayDescriptions[i])
+				i := g.r.Intn(len(dayDescriptions))
+				g.SendGroupMessage(fmt.Sprintf("<b>Наступил день</b>\n%+v", dayDescriptions[i]))
 			case DayVoting:
 				// state message handled by day voting
 				break
 			case Night:
-				i := rand.Intn(len(nightDescriptions))
-				text = fmt.Sprintf("<b>Наступила ночь</b>\n%+v", nightDescriptions[i])
+				i := g.r.Intn(len(nightDescriptions))
+				g.SendGroupMessage(fmt.Sprintf("<b>Наступила ночь</b>\n%+v", nightDescriptions[i]))
 			}
 
-			if text != "" {
-				g.SendGroupMessage(text)
-			}
 			g.ProcessNewState()
-			g.ticker.RaiseAlarm(30)
+			g.ticker.RaiseAlarm(20)
 		}
 
 		g.ticker.Tick()
@@ -136,7 +145,7 @@ func (g *Game) SendWelcomeMessages() {
 	// TODO set Role field in TGUser, use switch-case -> no need for continue here
 	for _, user := range g.Members {
 		if user == g.Commissar {
-			i := rand.Intn(len(commissarDescriptions))
+			i := g.r.Intn(len(commissarDescriptions))
 			g.SendPrivateMessage(fmt.Sprintf("Ты коммисар Каттани!\n%+v", commissarDescriptions[i]), user)
 			continue
 		}
@@ -157,7 +166,7 @@ func (g *Game) SendWelcomeMessages() {
 			continue
 		}
 
-		i := rand.Intn(len(peaceMemberDescriptions))
+		i := g.r.Intn(len(peaceMemberDescriptions))
 		g.SendPrivateMessage(
 			fmt.Sprintf("Ты простой мирный житель, %+v\nТвоя задача — вычислить мафию и на городском собрании линчевать засранцев.", peaceMemberDescriptions[i]),
 			user)
@@ -218,15 +227,14 @@ func (g *Game) UserCouldTalk(userName string) bool {
 }
 
 func (g *Game) AssignRoles() {
-	rand.NewSource(time.Now().UnixNano())
-
 	randMax := len(g.Members)
 	memberNames := make([]string, 0, len(g.Members))
-	for k := range g.Members {
+	for k, member := range g.Members {
+		member.Role = "Мирный житель"
 		memberNames = append(memberNames, k)
 	}
 
-	doctorInd := rand.Intn(randMax)
+	doctorInd := g.r.Intn(randMax)
 
 	g.Doctor = g.Members[memberNames[doctorInd]]
 	g.Doctor.Role = "Доктор"
@@ -234,7 +242,7 @@ func (g *Game) AssignRoles() {
 	// TODO Dirty hack to assign commissar
 	g.Commissar = g.Doctor
 	for g.Commissar == g.Doctor {
-		commissarInd := rand.Intn(randMax)
+		commissarInd := g.r.Intn(randMax)
 		g.Commissar = g.Members[memberNames[commissarInd]]
 	}
 	g.Commissar.Role = "Комиссар Каттани"
@@ -244,7 +252,7 @@ func (g *Game) AssignRoles() {
 	ganstersAllSet := false
 	// TODO Scary shit, could be infinite loop
 	for !ganstersAllSet {
-		gansterName := memberNames[rand.Intn(randMax)]
+		gansterName := memberNames[g.r.Intn(randMax)]
 		ganster := g.Members[gansterName]
 
 		if ganster == g.Doctor || ganster == g.Commissar {
@@ -260,39 +268,59 @@ func (g *Game) AssignRoles() {
 	}
 }
 
-func (g *Game) KillMember(user *types.TGUser) {
+// ExecuteKill marks member to be killed if command is not nil
+func (g *Game) ExecuteKill(value *VoteCommandValue) {
+	if value == nil {
+		return
+	}
+
 	cmd := InGameCommand{
 		Type:   Kill,
-		Member: g.Members[user.UserName],
+		Member: g.Members[value.Value],
 	}
 
 	// kill command should be first, heal last to remove a kill by the heal
 	g.Commands = append([]InGameCommand{cmd}, g.Commands...)
 }
 
-func (g *Game) HealMember(user *types.TGUser) {
+// ExecuteHeal marks member to be healed if command is not nil
+func (g *Game) ExecuteHeal(value *VoteCommandValue) {
+	if value == nil {
+		return
+	}
+
 	cmd := InGameCommand{
 		Type:   Heal,
-		Member: g.Members[user.UserName],
+		Member: g.Members[value.Value],
 	}
 
 	// heal should be last, kill first to remove a kill by the heal
 	g.Commands = append(g.Commands, cmd)
 }
 
-func (g *Game) InspectMember(user *types.TGUser) {
+// ExecuteInspect marks member to be inspected if command is not nil
+func (g *Game) ExecuteInspect(value *VoteCommandValue) {
+	if value == nil {
+		return
+	}
+
 	cmd := InGameCommand{
 		Type:   Inspect,
-		Member: g.Members[user.UserName],
+		Member: g.Members[value.Value],
 	}
 
 	g.Commands = append(g.Commands, cmd)
 }
 
-func (g *Game) LynchMember(user *types.TGUser) {
+// ExecuteLynch marks member to be lynched if command is not nil
+func (g *Game) ExecuteLynch(value *VoteCommandValue) {
+	if value == nil {
+		return
+	}
+
 	cmd := InGameCommand{
 		Type:   Lynch,
-		Member: g.Members[user.UserName],
+		Member: g.Members[value.Value],
 	}
 
 	g.Commands = append(g.Commands, cmd)
@@ -310,8 +338,10 @@ func (g *Game) ProcessCommands() {
 			g.SendGroupMessage(msg)
 		case Heal:
 			delete(nowDead, cmd.Member.UserName)
+			g.SendPrivateMessage("Доктор приходил к вам", cmd.Member)
 		case Inspect:
 			msg := fmt.Sprintf("@%+v - <b>%+v</b>", cmd.Member.UserName, cmd.Member.Role)
+			g.SendPrivateMessage("Кто-то заинтересовался вашей ролью", cmd.Member)
 			g.SendPrivateMessage(msg, g.Commissar)
 		}
 	}
@@ -399,7 +429,7 @@ func (g *Game) StartVoteLynch() {
 		voters = append(voters, m)
 	}
 
-	i := rand.Intn(len(lynchDescriptions))
+	i := g.r.Intn(len(lynchDescriptions))
 	vcmd := VoteCommand{
 		GameChatID:       g.ChatID,
 		Action:           StartVoteAction,
@@ -492,44 +522,117 @@ func (g *Game) finalizeVotingFor(st State) {
 		// general voting
 		g.lynchVote.Action = StopVoteAction
 		g.votesCh <- g.lynchVote
-		for g.lynchVote.GetResult() == nil {
-			time.Sleep(10 * time.Millisecond)
+		for {
+			_, lynchSynced := g.lynchVote.GetResult()
+
+			log.Printf("Votes are ready lynch: %+v", lynchSynced)
+			if lynchSynced {
+				break
+			}
+			time.Sleep(30 * time.Millisecond)
 		}
-		lynchResult := g.lynchVote.GetResult()
-		g.KillMember(g.Members[lynchResult.Value])
+
+		lynchResult, _ := g.lynchVote.GetResult()
+		g.ExecuteLynch(lynchResult)
 	case Night:
-		// doc voting
 		g.doctorVote.Action = StopVoteAction
 		g.votesCh <- g.doctorVote
-		for g.doctorVote.GetResult() == nil {
-			time.Sleep(10 * time.Millisecond)
-		}
-		docResult := g.doctorVote.GetResult()
-		g.HealMember(g.Members[docResult.Value])
 
-		// kom voting
 		g.commissarVote.Action = StopVoteAction
 		g.votesCh <- g.commissarVote
-		for g.commissarVote.GetResult() == nil {
-			time.Sleep(10 * time.Millisecond)
-		}
-		comResult := g.commissarVote.GetResult()
-		g.InspectMember(g.Members[comResult.Value])
 
-		// mafia voting
 		g.mafiaVote.Action = StopVoteAction
 		g.votesCh <- g.mafiaVote
-		for g.mafiaVote.GetResult() == nil {
-			time.Sleep(10 * time.Millisecond)
+
+		for {
+			_, docSynced := g.doctorVote.GetResult()
+			_, comSynced := g.commissarVote.GetResult()
+			_, mafSynced := g.mafiaVote.GetResult()
+
+			log.Printf("Votes are ready doctor: %+v, commissar: %+v, mafia: %+v", docSynced, comSynced, mafSynced)
+			if docSynced && comSynced && mafSynced {
+				break
+			}
+			time.Sleep(30 * time.Millisecond)
 		}
-		mafiaResult := g.mafiaVote.GetResult()
-		g.KillMember(g.Members[mafiaResult.Value])
+		// doc voting
+		docResult, _ := g.doctorVote.GetResult()
+		g.ExecuteHeal(docResult)
+
+		// kom voting
+		comResult, _ := g.commissarVote.GetResult()
+		g.ExecuteInspect(comResult)
+
+		// mafia voting
+		mafiaResult, _ := g.mafiaVote.GetResult()
+		g.ExecuteKill(mafiaResult)
 		return
 	}
 }
 
-func (g *Game) TryToEnd() {
+func (g *Game) TryToEnd() bool {
 	// cases when game should end:
+	// 1. Main. After night only two members are alive
+	if len(g.Members)-len(g.DeadMembers) <= 2 {
+		g.Stop()
+		return true
+	}
+
+	shouldStop := true
 	// 1. No more gangsters
-	// 2. After night only two members are alive
+	for gangsterUsername, _ := range g.GangsterMembers {
+		_, dead := g.DeadMembers[gangsterUsername]
+		if !dead {
+			shouldStop = false
+			break
+		}
+	}
+
+	if shouldStop {
+		g.Stop()
+	}
+
+	return shouldStop
+}
+
+func (g *Game) GetResults() string {
+	alive := make([]*types.TGUser, 0, len(g.Members)-len(g.DeadMembers))
+	aliveGansters := make([]*types.TGUser, 0, 2)
+
+	winnerText := "Все мужчины клана погибли в вендеттах. Город освобожден."
+	winnersList := "Победители:\n"
+	defeatedList := "Проигравшие:\n"
+
+	for _, member := range g.Members {
+		_, dead := g.DeadMembers[member.UserName]
+		if !dead {
+			_, gangster := g.GangsterMembers[member.UserName]
+			if gangster {
+				aliveGansters = append(aliveGansters, member)
+			} else {
+				alive = append(alive, member)
+			}
+		} else {
+			defeatedList += fmt.Sprintf("  - @%+v - <b>%+v</b>\n", member.UserName, member.Role)
+		}
+	}
+
+	if len(aliveGansters) != 0 {
+		for _, gangster := range aliveGansters {
+			winnersList += fmt.Sprintf("  - @%+v - <b>%+v</b>\n", gangster.UserName, gangster.Role)
+			winnerText = "Город захвачен сицилийскими псинами сутулыми. Мафия победила."
+		}
+
+		// mafia won, all alive member have loosed
+		for _, member := range alive {
+			defeatedList += fmt.Sprintf("  - @%+v - <b>%+v</b>\n", member.UserName, member.Role)
+		}
+	} else {
+		for _, member := range alive {
+			winnersList += fmt.Sprintf("  - @%+v - <b>%+v</b>\n", member.UserName, member.Role)
+		}
+	}
+
+	text := fmt.Sprintf("Игра завершена \n%+v \n%+v \n%+v", winnerText, winnersList, defeatedList)
+	return text
 }

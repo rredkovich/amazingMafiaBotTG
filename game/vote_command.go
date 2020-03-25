@@ -41,22 +41,26 @@ type VoteCommand struct {
 	Voters           []*types.TGUser
 	Values           []*VoteCommandValue
 	result           *VoteCommandValue
+	synced           bool
 }
 
-func (vc *VoteCommand) SetResult(v *VoteCommandValue) {
+// sets result, provides option to signalized that result was set by synced = true
+func (vc *VoteCommand) SetResult(v *VoteCommandValue, synced bool) {
 	vc.Lock()
 	defer vc.Unlock()
 
 	vc.result = v
+	vc.synced = synced
 }
 
-func (vc *VoteCommand) GetResult() *VoteCommandValue {
+func (vc *VoteCommand) GetResult() (*VoteCommandValue, bool) {
 	vc.Lock()
 	defer vc.Unlock()
 
-	return vc.result
+	return vc.result, vc.synced
 }
 
+// TODO move Value to specific type Username to show that game.Member could be get by it
 type VoteCommandValue struct {
 	Text  string
 	Value string
