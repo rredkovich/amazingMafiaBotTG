@@ -242,7 +242,9 @@ func main() {
 					} else {
 						answer = tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Вы присоединились к игре в <b>%+v</b>", startedGame.ChatTitle))
 						answer.ParseMode = "html"
-						announcement := tgbotapi.NewMessage(startedGame.ChatID, fmt.Sprintf("@%+v в игре, всего %+v", from.UserName, startedGame.MembersCount()))
+						text := fmt.Sprintf("[%+v %+v](tg://user?id=%+v) в игре, всего %+v", from.FirstName, from.LastName, from.ID, startedGame.MembersCount())
+						announcement := tgbotapi.NewMessage(startedGame.ChatID, text)
+						announcement.ParseMode = "markdown"
 						bot.Send(announcement)
 					}
 					bot.Send(answer)
