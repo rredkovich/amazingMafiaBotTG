@@ -137,7 +137,7 @@ func main() {
 					msg.ParseMode = "html"
 					bot.Send(msg)
 				case game.VoteAvailabilityEnum.Lynch:
-					msg := tgbotapi.NewMessage(vote.GameChatID, fmt.Sprintf("@%+v выбрал @%+v", update.CallbackQuery.From.UserName, tgVote.Value))
+					msg := tgbotapi.NewMessage(vote.GameChatID, fmt.Sprintf("%+v выбрал @%+v", InlineName(update.CallbackQuery.From), tgVote.Value))
 					msg.ParseMode = "html"
 					bot.Send(msg)
 				}
@@ -278,4 +278,13 @@ func main() {
 			}
 		}
 	}
+}
+
+func InlineName(u *tgbotapi.User) string {
+	if u.FirstName != "" && u.LastName != "" {
+		return fmt.Sprintf("<a href=\"tg://user?id=%+v\">%+v %+v</a>", u.ID, u.FirstName, u.LastName)
+	} else {
+		return fmt.Sprintf("<a href=\"tg://user?id=%+v\">%+v</a>", u.ID, u.FirstName)
+	}
+
 }

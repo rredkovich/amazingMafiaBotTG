@@ -1,0 +1,1 @@
+registration timer doesn't take /extend value

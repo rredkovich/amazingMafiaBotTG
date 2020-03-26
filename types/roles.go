@@ -3,9 +3,9 @@ package types
 type RoleType string
 
 const (
-	Commissar RoleType = "Комиссар"
+	Commissar RoleType = "Комиссар Каттани"
 	Citizen            = "Мирный житель"
 	Don                = "Дон"
-	Gangster           = "Гангстер"
+	Gangster           = "Мафиози"
 	Doctor             = "Доктор"
 )

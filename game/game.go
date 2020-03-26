@@ -230,14 +230,14 @@ func (g *Game) AssignRoles() {
 	randMax := len(g.Members)
 	memberNames := make([]string, 0, len(g.Members))
 	for k, member := range g.Members {
-		member.Role = "Мирный житель"
+		member.Role = types.Citizen
 		memberNames = append(memberNames, k)
 	}
 
 	doctorInd := g.r.Intn(randMax)
 
 	g.Doctor = g.Members[memberNames[doctorInd]]
-	g.Doctor.Role = "Доктор"
+	g.Doctor.Role = types.Doctor
 
 	// TODO Dirty hack to assign commissar
 	g.Commissar = g.Doctor
@@ -245,7 +245,7 @@ func (g *Game) AssignRoles() {
 		commissarInd := g.r.Intn(randMax)
 		g.Commissar = g.Members[memberNames[commissarInd]]
 	}
-	g.Commissar.Role = "Комиссар Каттани"
+	g.Commissar.Role = types.Commissar
 
 	ganstersNum := len(g.Members) / 3
 
@@ -259,7 +259,7 @@ func (g *Game) AssignRoles() {
 			continue
 		}
 
-		ganster.Role = "Гангстер"
+		ganster.Role = types.Gangster
 		g.GangsterMembers[ganster.UserName] = ganster
 
 		if len(g.GangsterMembers) == ganstersNum {
@@ -333,14 +333,14 @@ func (g *Game) ProcessCommands() {
 		case Kill:
 			nowDead[cmd.Member.UserName] = cmd.Member
 		case Lynch:
-			msg := fmt.Sprintf("Пользователь @%+v будет повешен", cmd.Member.UserName)
+			msg := fmt.Sprintf("Пользователь %+v будет повешен", cmd.Member.InlineTGName())
 			nowDead[cmd.Member.UserName] = cmd.Member
 			g.SendGroupMessage(msg)
 		case Heal:
 			delete(nowDead, cmd.Member.UserName)
 			g.SendPrivateMessage("Доктор приходил к вам", cmd.Member)
 		case Inspect:
-			msg := fmt.Sprintf("@%+v - <b>%+v</b>", cmd.Member.UserName, cmd.Member.Role)
+			msg := fmt.Sprintf("%+v - <b>%+v</b>", cmd.Member.InlineTGName(), cmd.Member.Role)
 			g.SendPrivateMessage("Кто-то заинтересовался вашей ролью", cmd.Member)
 			g.SendPrivateMessage(msg, g.Commissar)
 		}
@@ -348,9 +348,23 @@ func (g *Game) ProcessCommands() {
 
 	for _, user := range nowDead {
 		g.DeadMembers[user.UserName] = user
-		g.SendPrivateMessage("К сожалению вас убили", user)
 
-		g.SendGroupMessage(fmt.Sprintf("@%+v больше нет с нами, прощай <b>%+v</b>", user.UserName, user.Role))
+		if g.Commissar == user {
+			g.Commissar = nil
+			g.commissarVote = nil
+		}
+
+		if g.Doctor == user {
+			g.Doctor = nil
+			g.doctorVote = nil
+		}
+
+		if g.Don == user {
+			g.Don = nil
+		}
+
+		g.SendPrivateMessage("К сожалению вас убили", user)
+		g.SendGroupMessage(fmt.Sprintf("%+v больше нет с нами, прощай <b>%+v</b>", user.InlineTGName(), user.Role))
 	}
 
 	if len(nowDead) == 0 && len(g.Commands) != 0 {
@@ -387,11 +401,11 @@ func (g *Game) StartVoteGansters() {
 		_, gangster := g.GangsterMembers[m.UserName]
 		if gangster {
 			values = append(values,
-				&VoteCommandValue{fmt.Sprintf("🕴️ %+v", m.UserName), m.UserName})
+				&VoteCommandValue{fmt.Sprintf("🕴️ %+v", m.HumanReadableName()), m.UserName})
 			voters = append(voters, m)
 		} else {
 			values = append(values,
-				&VoteCommandValue{m.UserName, m.UserName})
+				&VoteCommandValue{m.HumanReadableName(), m.UserName})
 		}
 	}
 
@@ -425,7 +439,7 @@ func (g *Game) StartVoteLynch() {
 			continue
 		}
 		values = append(values,
-			&VoteCommandValue{m.UserName, m.UserName})
+			&VoteCommandValue{m.HumanReadableName(), m.UserName})
 		voters = append(voters, m)
 	}
 
@@ -458,7 +472,7 @@ func (g *Game) StartVoteDoctor() {
 		if ok {
 			continue
 		}
-		values = append(values, &VoteCommandValue{m.UserName, m.UserName})
+		values = append(values, &VoteCommandValue{m.HumanReadableName(), m.UserName})
 	}
 
 	vcmd := VoteCommand{
@@ -488,7 +502,7 @@ func (g *Game) StartVoteCommissar() {
 		if ok {
 			continue
 		}
-		values = append(values, &VoteCommandValue{m.UserName, m.UserName})
+		values = append(values, &VoteCommandValue{m.HumanReadableName(), m.UserName})
 	}
 
 	vcmd := VoteCommand{
@@ -535,39 +549,71 @@ func (g *Game) finalizeVotingFor(st State) {
 		lynchResult, _ := g.lynchVote.GetResult()
 		g.ExecuteLynch(lynchResult)
 	case Night:
-		g.doctorVote.Action = StopVoteAction
-		g.votesCh <- g.doctorVote
+		g.EndVoteCommissar()
+		g.EndVoteGansters()
+		g.EndVoteDoctor()
+	}
+}
 
-		g.commissarVote.Action = StopVoteAction
-		g.votesCh <- g.commissarVote
-
-		g.mafiaVote.Action = StopVoteAction
-		g.votesCh <- g.mafiaVote
-
-		for {
-			_, docSynced := g.doctorVote.GetResult()
-			_, comSynced := g.commissarVote.GetResult()
-			_, mafSynced := g.mafiaVote.GetResult()
-
-			log.Printf("Votes are ready doctor: %+v, commissar: %+v, mafia: %+v", docSynced, comSynced, mafSynced)
-			if docSynced && comSynced && mafSynced {
-				break
-			}
-			time.Sleep(30 * time.Millisecond)
-		}
-		// doc voting
-		docResult, _ := g.doctorVote.GetResult()
-		g.ExecuteHeal(docResult)
-
-		// kom voting
-		comResult, _ := g.commissarVote.GetResult()
-		g.ExecuteInspect(comResult)
-
-		// mafia voting
-		mafiaResult, _ := g.mafiaVote.GetResult()
-		g.ExecuteKill(mafiaResult)
+func (g *Game) EndVoteCommissar() {
+	if g.CommissarIsDead() || g.Commissar == nil {
 		return
 	}
+	g.commissarVote.Action = StopVoteAction
+	g.votesCh <- g.commissarVote
+
+	for {
+		_, comSynced := g.commissarVote.GetResult()
+
+		log.Printf("Votes are ready commissar: %+v", comSynced)
+		if comSynced {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+
+	comResult, _ := g.commissarVote.GetResult()
+	g.ExecuteInspect(comResult)
+}
+
+func (g *Game) EndVoteDoctor() {
+	if g.DoctorIsDead() || g.Doctor == nil {
+		return
+	}
+	g.doctorVote.Action = StopVoteAction
+	g.votesCh <- g.doctorVote
+
+	for {
+		_, docSynced := g.doctorVote.GetResult()
+
+		log.Printf("Votes are ready doctor: %+v", docSynced)
+		if docSynced {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+
+	docResult, _ := g.doctorVote.GetResult()
+	g.ExecuteHeal(docResult)
+}
+
+func (g *Game) EndVoteGansters() {
+	g.mafiaVote.Action = StopVoteAction
+	g.votesCh <- g.mafiaVote
+
+	for {
+		_, mafSynced := g.mafiaVote.GetResult()
+
+		log.Printf("Votes are ready mafia: %+v", mafSynced)
+		if mafSynced {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+
+	// mafia voting
+	mafiaResult, _ := g.mafiaVote.GetResult()
+	g.ExecuteKill(mafiaResult)
 }
 
 func (g *Game) TryToEnd() bool {
@@ -613,23 +659,23 @@ func (g *Game) GetResults() string {
 				alive = append(alive, member)
 			}
 		} else {
-			defeatedList += fmt.Sprintf("  - @%+v - <b>%+v</b>\n", member.UserName, member.Role)
+			defeatedList += fmt.Sprintf("  - %+v - <b>%+v</b>\n", member.InlineTGName(), member.Role)
 		}
 	}
 
 	if len(aliveGansters) != 0 {
 		for _, gangster := range aliveGansters {
-			winnersList += fmt.Sprintf("  - @%+v - <b>%+v</b>\n", gangster.UserName, gangster.Role)
+			winnersList += fmt.Sprintf("  - %+v - <b>%+v</b>\n", gangster.InlineTGName(), gangster.Role)
 			winnerText = "Город захвачен сицилийскими псинами сутулыми. Мафия победила."
 		}
 
 		// mafia won, all alive member have loosed
 		for _, member := range alive {
-			defeatedList += fmt.Sprintf("  - @%+v - <b>%+v</b>\n", member.UserName, member.Role)
+			defeatedList += fmt.Sprintf("  - %+v - <b>%+v</b>\n", member.InlineTGName(), member.Role)
 		}
 	} else {
 		for _, member := range alive {
-			winnersList += fmt.Sprintf("  - @%+v - <b>%+v</b>\n", member.UserName, member.Role)
+			winnersList += fmt.Sprintf("  - %+v - <b>%+v</b>\n", member.InlineTGName(), member.Role)
 		}
 	}
 
@@ -647,7 +693,7 @@ func (g *Game) ListAlive() string {
 	for _, member := range g.Members {
 		_, dead := g.DeadMembers[member.UserName]
 		if !dead {
-			text += fmt.Sprintf("- @%+v\n", member.UserName)
+			text += fmt.Sprintf("- %+v\n", member.InlineTGName())
 		}
 	}
 
