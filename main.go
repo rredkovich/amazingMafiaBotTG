@@ -286,6 +286,9 @@ func main() {
 			case false:
 				game, ok := games[update.Message.Chat.ID]
 				if !ok {
+					for _, g := range games {
+						g.ProcessInGameDirectMessage(update.Message.From.UserName, update.Message.Text)
+					}
 					continue
 				}
 
@@ -294,6 +297,7 @@ func main() {
 					bot.DeleteMessage(dcfg)
 				}
 			}
+
 		}
 	}
 }

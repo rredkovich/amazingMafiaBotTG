@@ -184,6 +184,10 @@ func (g *Game) AddMember(u *types.TGUser) error {
 		u.Role = "Мирный житель"
 		g.Members[u.UserName] = u
 		// Cannot send messages from goroutine while
+
+		// shitty duck taped solution
+		//go func() {g.SendPrivateMessage(fmt.Sprintf("Вы вступили в игру в '%+v'", g.ChatTitle), u)}()
+
 		/* g.SendPrivateMessage(fmt.Sprintf("Вы вступили в игру в '%+v'", g.ChatTitle), u)
 			g.SendGroupMessage(fmt.Sprintf("+1 в игру, теперь нас %+v", len(g.Members)))
 		} else {
@@ -224,6 +228,46 @@ func (g *Game) UserCouldTalk(userName string) bool {
 	}
 
 	return true
+}
+
+func (g *Game) ProcessInGameDirectMessage(userName string, msg string) {
+	_, inGame := g.Members[userName]
+	if !inGame {
+		return
+	}
+
+	u, dead := g.DeadMembers[userName]
+	if dead {
+		g.DeadWantsToTalk(u, msg)
+	}
+}
+
+func (g *Game) DeadWantsToTalk(u *types.TGUser, msg string) {
+	if !u.SpokenLastWords {
+		i := g.r.Intn(len(deadNotes))
+		notePrefix := fmt.Sprintf(deadNotes[i], u.InlineTGName())
+		note := fmt.Sprintf("%+v <i>%+v</i>", notePrefix, msg)
+		// TODO bad could leak memory
+		u.SpokenLastWords = true
+		go func() { g.SendGroupMessage(note) }()
+		return
+	}
+
+	/*
+		// TODO bad could leak memory, test thoughfuly before release
+		// Sends dead messages from one dead to another
+		go func() {
+			time.Sleep(10 * time.Millisecond)
+			for _, du := range g.DeadMembers {
+				if du == u {
+					return
+				}
+
+			words := fmt.Sprintf("%+v: %+v", u.InlineTGName(), msg)
+			g.SendPrivateMessage(words, u)
+		}()
+	*/
+
 }
 
 func (g *Game) AssignRoles() {
@@ -363,7 +407,10 @@ func (g *Game) ProcessCommands() {
 			g.Don = nil
 		}
 
-		g.SendPrivateMessage("К сожалению вас убили", user)
+		i := g.r.Intn(len(deaths))
+		askForDeadNote := fmt.Sprintf(deadNotePrompt, deaths[i])
+
+		g.SendPrivateMessage(askForDeadNote, user)
 		g.SendGroupMessage(fmt.Sprintf("%+v больше нет с нами, прощай <b>%+v</b>", user.InlineTGName(), user.Role))
 	}
 
