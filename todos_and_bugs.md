@@ -14,3 +14,10 @@ registration timer doesn't take /extend value
     - Games played
     - Avg game duration
     - Avg number of members
+    
+    
+## docker build command
+!! pass commit date and sha1
+```bash
+docker build -t amazingmafiabot:production --build-arg RELEASE_VERSION=2020-03-20_production_1e715b0 .
+```

@@ -4,6 +4,7 @@
 *.dll
 *.so
 *.dylib
+mafiabot
 
 # Test binary, built with `go test -c`
 *.test
