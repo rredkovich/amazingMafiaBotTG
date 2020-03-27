@@ -88,7 +88,8 @@ func (v *Vote) StartVote(votes map[string]*TGVoteValue) []*tgbotapi.MessageConfi
 				key := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData(value.Text, voteUUID)}
 				kbdRows = append(kbdRows, key)
 			}
-			msg := tgbotapi.NewMessage(int64(voter.ID), "Кого желаем вздернуть?")
+			//msg := tgbotapi.NewMessage(int64(voter.ID), "Кто будет встречать закат медленно раскачиваясь в петле?")
+			msg := tgbotapi.NewMessage(int64(voter.ID), v.VoteText)
 			msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(kbdRows...)
 			messages = append(messages, &msg)
 		}
@@ -103,7 +104,7 @@ func (v *Vote) StartVote(votes map[string]*TGVoteValue) []*tgbotapi.MessageConfi
 			kbdRows := make([][]tgbotapi.InlineKeyboardButton, 0, len(v.Values)-1) // will not vote for himself
 			for _, value := range v.Values {
 				// will note vote for himself
-				// value.Text here has mafia emoji
+				// value.Text here has a mafia emoji
 				// TODO operate with userID's everywhere?
 				if value.Value == voter.UserName {
 					continue
@@ -114,7 +115,7 @@ func (v *Vote) StartVote(votes map[string]*TGVoteValue) []*tgbotapi.MessageConfi
 				row := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData(value.Text, voteUUID)}
 				kbdRows = append(kbdRows, row)
 			}
-			msg := tgbotapi.NewMessage(int64(voter.ID), "Кого желаем вздернуть?")
+			msg := tgbotapi.NewMessage(int64(voter.ID), v.VoteText)
 			msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(kbdRows...)
 			messages = append(messages, &msg)
 		}
@@ -177,6 +178,11 @@ func (v *Vote) RegisterVote(u *tgbotapi.User, vote string) error {
 
 	v.Votes[u] = vote
 	return nil
+}
+
+// EverbodyVoted answers if everybody made a decision
+func (v *Vote) EveryBodyVoted() bool {
+	return len(v.Voters) == len(v.Votes)
 }
 
 // EndVote returns result of a vote. nil if no one has voted

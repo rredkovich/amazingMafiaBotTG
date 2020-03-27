@@ -103,7 +103,7 @@ func main() {
 			}
 
 		case update := <-updatesCh:
-			log.Printf("Games: %+v\n", games)
+			//log.Printf("Games: %+v\n", games)
 			// command execution from voting
 			if update.CallbackQuery != nil {
 				//log.Printf("VOTE ENUM %s", game.VoteActionEnum.Start)
@@ -141,6 +141,9 @@ func main() {
 
 				switch vote.VoteAvailability {
 				case game.VoteAvailabilityEnum.Mafia:
+					if !vote.EveryBodyVoted() {
+						continue
+					}
 					msg := tgbotapi.NewMessage(vote.GameChatID, "<b>Мафия</b> выбрала жертву")
 					msg.ParseMode = "html"
 					bot.Send(msg)
@@ -158,7 +161,7 @@ func main() {
 					bot.Send(msg)
 				}
 				toDelete := tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID)
-				bot.DeleteMessage(toDelete)
+				_, _ = bot.DeleteMessage(toDelete)
 				continue
 			}
 

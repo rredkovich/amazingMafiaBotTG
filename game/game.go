@@ -70,7 +70,7 @@ func (g *Game) Play(prepareTime uint32) {
 				}
 				g.AssignRoles()
 				g.SendWelcomeMessages()
-				g.SendGroupMessage("Игра началась!")
+				g.SendGroupMessage("<b>Игра началась!</b>")
 			}
 			endingState := g.State.GetState()
 			log.Printf("Ending state %+v for game %+v ", g.State.GetState(), g.ChatID)
@@ -80,7 +80,7 @@ func (g *Game) Play(prepareTime uint32) {
 
 			if ended {
 				results := g.GetResults()
-				g.SendGroupMessage(fmt.Sprintf("%+v\n\nИгра длилась %+v секунд", results, duration))
+				g.SendGroupMessage(fmt.Sprintf("%+v\nИгра длилась %+v секунд", results, duration))
 				return
 			}
 
@@ -371,15 +371,15 @@ func (g *Game) ExecuteLynch(value *VoteCommandValue) {
 }
 
 func (g *Game) ProcessCommands() {
+	lynchVote := false
 	nowDead := make(map[string]*types.TGUser)
 	for _, cmd := range g.Commands {
 		switch cmd.Type {
 		case Kill:
 			nowDead[cmd.Member.UserName] = cmd.Member
 		case Lynch:
-			msg := fmt.Sprintf("Пользователь %+v будет повешен", cmd.Member.InlineTGName())
 			nowDead[cmd.Member.UserName] = cmd.Member
-			g.SendGroupMessage(msg)
+			lynchVote = true
 		case Heal:
 			delete(nowDead, cmd.Member.UserName)
 			g.SendPrivateMessage("Доктор приходил к вам", cmd.Member)
@@ -407,11 +407,20 @@ func (g *Game) ProcessCommands() {
 			g.Don = nil
 		}
 
-		i := g.r.Intn(len(deaths))
-		askForDeadNote := fmt.Sprintf(deadNotePrompt, deaths[i])
+		if lynchVote {
+			g.SendPrivateMessage("Тебя линчевали на дневном собрании 😞", user)
+			i := g.r.Intn(len(lynchResults))
+			msg := fmt.Sprintf(lynchResults[i], user.InlineTGName()) + fmt.Sprintf("\n\nРоль - <b>%+v</b>", user.Role)
+			g.SendGroupMessage(msg)
+		} else {
+			i := g.r.Intn(len(deaths))
+			askForDeadNote := fmt.Sprintf(deadNotePrompt, deaths[i])
+			g.SendPrivateMessage(askForDeadNote, user)
+			// TODO comissar kill should be with different text
+			j := g.r.Intn(len(mafiaDeathsDescriptions))
+			g.SendGroupMessage(fmt.Sprintf(mafiaDeathsDescriptions[j], user.InlineTGName(), user.Role))
+		}
 
-		g.SendPrivateMessage(askForDeadNote, user)
-		g.SendGroupMessage(fmt.Sprintf("%+v больше нет с нами, прощай <b>%+v</b>", user.InlineTGName(), user.Role))
 	}
 
 	if len(nowDead) == 0 && len(g.Commands) != 0 {
@@ -468,12 +477,6 @@ func (g *Game) StartVoteGansters() {
 
 	g.mafiaVote = &vcmd
 	g.votesCh <- &vcmd
-}
-
-var lynchDescriptions = [3]string{
-	"У каждого имеется своя судьба, надо только распознать ее. И момент выбора возникает у каждого. Кто же выбрал неверный путь?",
-	"Запутавшиеся горожане подозревают друг друга. Но повесить можно только одного. Кого?",
-	"В голове головоломка! С кем прекращаем общение?",
 }
 
 func (g *Game) StartVoteLynch() {
@@ -726,7 +729,7 @@ func (g *Game) GetResults() string {
 		}
 	}
 
-	text := fmt.Sprintf("Игра завершена \n%+v \n%+v \n%+v", winnerText, winnersList, defeatedList)
+	text := fmt.Sprintf("<b>Игра завершена</b>\n%+v \n%+v \n%+v", winnerText, winnersList, defeatedList)
 	return text
 }
 
@@ -736,13 +739,23 @@ func (g *Game) MembersCount() int {
 
 func (g *Game) ListAlive() string {
 	text := "Живые игроки:\n"
-
+	var roles []types.RoleType
 	for _, member := range g.Members {
 		_, dead := g.DeadMembers[member.UserName]
 		if !dead {
 			text += fmt.Sprintf("- %+v\n", member.InlineTGName())
+			roles = append(roles, member.Role)
 		}
 	}
 
-	return text
+	g.r.Seed(time.Now().UnixNano())
+	g.r.Shuffle(len(roles), func(i, j int) { roles[i], roles[j] = roles[j], roles[i] })
+
+	text += "\n<b>Роли:</b> "
+	for _, role := range roles {
+		text += fmt.Sprintf("%+v, ", role)
+	}
+
+	// cutting last ,
+	return text[:len(text)-1]
 }

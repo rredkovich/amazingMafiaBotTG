@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="f7dad795-4095-43e7-b98e-ee1bb0cc477e" name="Default Changelist" comment="">
+    <list default="true" id="f7dad795-4095-43e7-b98e-ee1bb0cc477e" name="Default Changelist" comment="Varios stuff&#10;- Mafia vote altogether before notification in general chat&#10;- Votes text different to lynch and mafia vote&#10;- Alive roles send in beggining of each day">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/game/game.go" beforeDir="false" afterPath="$PROJECT_DIR$/game/game.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/game/game_texts.go" beforeDir="false" afterPath="$PROJECT_DIR$/game/game_texts.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notes.go" beforeDir="false" afterPath="$PROJECT_DIR$/notes.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tgvote.go" beforeDir="false" afterPath="$PROJECT_DIR$/tgvote.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/todos_and_bugs.md" beforeDir="false" afterPath="$PROJECT_DIR$/todos_and_bugs.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/types/users.go" beforeDir="false" afterPath="$PROJECT_DIR$/types/users.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -156,7 +155,8 @@
     <MESSAGE value="Testing inline user mention" />
     <MESSAGE value="Users mentions 95% correct. Fix for dead com/doc vote bug" />
     <MESSAGE value="Sentry config. Game duration time" />
-    <option name="LAST_COMMIT_MESSAGE" value="Sentry config. Game duration time" />
+    <MESSAGE value="Dead notes" />
+    <option name="LAST_COMMIT_MESSAGE" value="Dead notes" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
@@ -182,70 +182,70 @@
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
     <state x="699" y="613" key="#xdebugger.evaluate/0.0.2560.1440@0.0.2560.1440" timestamp="1585145530502" />
-    <state x="224" y="97" width="1502" height="1087" key="CommitChangelistDialog2" timestamp="1585319498556">
+    <state x="224" y="97" width="1502" height="1087" key="CommitChangelistDialog2" timestamp="1585347978665">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state x="224" y="97" width="1502" height="1087" key="CommitChangelistDialog2/0.0.2560.1440@0.0.2560.1440" timestamp="1585319498556" />
+    <state x="224" y="97" width="1502" height="1087" key="CommitChangelistDialog2/0.0.2560.1440@0.0.2560.1440" timestamp="1585347978665" />
     <state x="1166" y="560" key="EnvironmentVariablesDialog" timestamp="1585319541063">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
     <state x="1166" y="560" key="EnvironmentVariablesDialog/0.0.2560.1440@0.0.2560.1440" timestamp="1585319541063" />
-    <state width="2512" height="322" key="GridCell.Tab.0.bottom" timestamp="1585325636958">
+    <state width="2512" height="319" key="GridCell.Tab.0.bottom" timestamp="1585345902167">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="322" key="GridCell.Tab.0.bottom/0.0.2560.1440@0.0.2560.1440" timestamp="1585325636958" />
-    <state width="2512" height="322" key="GridCell.Tab.0.center" timestamp="1585325636958">
+    <state width="2512" height="319" key="GridCell.Tab.0.bottom/0.0.2560.1440@0.0.2560.1440" timestamp="1585345902167" />
+    <state width="2512" height="319" key="GridCell.Tab.0.center" timestamp="1585345902167">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="322" key="GridCell.Tab.0.center/0.0.2560.1440@0.0.2560.1440" timestamp="1585325636958" />
-    <state width="2512" height="322" key="GridCell.Tab.0.left" timestamp="1585325636958">
+    <state width="2512" height="319" key="GridCell.Tab.0.center/0.0.2560.1440@0.0.2560.1440" timestamp="1585345902167" />
+    <state width="2512" height="319" key="GridCell.Tab.0.left" timestamp="1585345902167">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="322" key="GridCell.Tab.0.left/0.0.2560.1440@0.0.2560.1440" timestamp="1585325636958" />
-    <state width="2512" height="322" key="GridCell.Tab.0.right" timestamp="1585325636958">
+    <state width="2512" height="319" key="GridCell.Tab.0.left/0.0.2560.1440@0.0.2560.1440" timestamp="1585345902167" />
+    <state width="2512" height="319" key="GridCell.Tab.0.right" timestamp="1585345902167">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="322" key="GridCell.Tab.0.right/0.0.2560.1440@0.0.2560.1440" timestamp="1585325636958" />
-    <state width="2512" height="322" key="GridCell.Tab.1.bottom" timestamp="1585325636958">
+    <state width="2512" height="319" key="GridCell.Tab.0.right/0.0.2560.1440@0.0.2560.1440" timestamp="1585345902167" />
+    <state width="2512" height="319" key="GridCell.Tab.1.bottom" timestamp="1585346136335">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="322" key="GridCell.Tab.1.bottom/0.0.2560.1440@0.0.2560.1440" timestamp="1585325636958" />
-    <state width="2512" height="322" key="GridCell.Tab.1.center" timestamp="1585325636958">
+    <state width="2512" height="319" key="GridCell.Tab.1.bottom/0.0.2560.1440@0.0.2560.1440" timestamp="1585346136335" />
+    <state width="2512" height="319" key="GridCell.Tab.1.center" timestamp="1585346136335">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="322" key="GridCell.Tab.1.center/0.0.2560.1440@0.0.2560.1440" timestamp="1585325636958" />
-    <state width="2512" height="322" key="GridCell.Tab.1.left" timestamp="1585325636958">
+    <state width="2512" height="319" key="GridCell.Tab.1.center/0.0.2560.1440@0.0.2560.1440" timestamp="1585346136335" />
+    <state width="2512" height="319" key="GridCell.Tab.1.left" timestamp="1585346136334">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="322" key="GridCell.Tab.1.left/0.0.2560.1440@0.0.2560.1440" timestamp="1585325636958" />
-    <state width="2512" height="322" key="GridCell.Tab.1.right" timestamp="1585325636958">
+    <state width="2512" height="319" key="GridCell.Tab.1.left/0.0.2560.1440@0.0.2560.1440" timestamp="1585346136334" />
+    <state width="2512" height="319" key="GridCell.Tab.1.right" timestamp="1585346136335">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="322" key="GridCell.Tab.1.right/0.0.2560.1440@0.0.2560.1440" timestamp="1585325636958" />
+    <state width="2512" height="319" key="GridCell.Tab.1.right/0.0.2560.1440@0.0.2560.1440" timestamp="1585346136335" />
     <state x="867" y="495" key="IDE.errors.dialog" timestamp="1584798963873">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
     <state x="867" y="495" key="IDE.errors.dialog/0.0.2560.1440@0.0.2560.1440" timestamp="1584798963873" />
-    <state x="773" y="384" key="SettingsEditor" timestamp="1585206758646">
+    <state x="773" y="384" key="SettingsEditor" timestamp="1585335086577">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state x="773" y="384" key="SettingsEditor/0.0.2560.1440@0.0.2560.1440" timestamp="1585206758646" />
-    <state x="879" y="485" key="Vcs.Push.Dialog.v2" timestamp="1585319499667">
+    <state x="773" y="384" key="SettingsEditor/0.0.2560.1440@0.0.2560.1440" timestamp="1585335086577" />
+    <state x="879" y="485" key="Vcs.Push.Dialog.v2" timestamp="1585325723656">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state x="879" y="485" key="Vcs.Push.Dialog.v2/0.0.2560.1440@0.0.2560.1440" timestamp="1585319499667" />
+    <state x="879" y="485" key="Vcs.Push.Dialog.v2/0.0.2560.1440@0.0.2560.1440" timestamp="1585325723656" />
     <state width="1279" height="703" key="XDebugger.FullValuePopup" timestamp="1585138818208">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
     <state width="1279" height="703" key="XDebugger.FullValuePopup/0.0.2560.1440@0.0.2560.1440" timestamp="1585138818208" />
-    <state x="808" y="425" width="934" height="773" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1585323899609">
+    <state x="808" y="425" width="934" height="773" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1585343529233">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state x="808" y="425" width="934" height="773" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/0.0.2560.1440@0.0.2560.1440" timestamp="1585323899609" />
-    <state x="730" y="803" width="695" height="413" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1585323619109">
+    <state x="808" y="425" width="934" height="773" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/0.0.2560.1440@0.0.2560.1440" timestamp="1585343529233" />
+    <state x="730" y="803" width="695" height="413" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1585341034139">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state x="730" y="803" width="695" height="413" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2/0.0.2560.1440@0.0.2560.1440" timestamp="1585323619109" />
+    <state x="730" y="803" width="695" height="413" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2/0.0.2560.1440@0.0.2560.1440" timestamp="1585341034139" />
     <state x="1117" y="506" width="831" height="513" key="refactoring.ChangeSignatureDialog" timestamp="1585319972535">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
@@ -284,7 +284,7 @@
         </line-breakpoint>
         <line-breakpoint type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/game/game.go</url>
-          <line>551</line>
+          <line>554</line>
           <option name="timeStamp" value="69" />
         </line-breakpoint>
         <line-breakpoint type="DlvLineBreakpoint">
@@ -294,12 +294,12 @@
         </line-breakpoint>
         <line-breakpoint type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/game/game.go</url>
-          <line>595</line>
+          <line>598</line>
           <option name="timeStamp" value="96" />
         </line-breakpoint>
         <line-breakpoint type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/tgvote.go</url>
-          <line>208</line>
+          <line>214</line>
           <option name="timeStamp" value="108" />
         </line-breakpoint>
         <line-breakpoint type="DlvLineBreakpoint">
@@ -309,13 +309,18 @@
         </line-breakpoint>
         <line-breakpoint type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/main.go</url>
-          <line>274</line>
+          <line>277</line>
           <option name="timeStamp" value="113" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+        <line-breakpoint type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/game/game.go</url>
-          <line>265</line>
+          <line>264</line>
           <option name="timeStamp" value="126" />
+        </line-breakpoint>
+        <line-breakpoint type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/game/game.go</url>
+          <line>671</line>
+          <option name="timeStamp" value="127" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
