@@ -7,8 +7,8 @@ import (
 
 type Ticker struct {
 	mux                  sync.Mutex
-	value                uint32
-	tickStep             uint32
+	value                int32
+	tickStep             int32
 	toAlarmValue         int32
 	lastBeforeAlarmValue int32
 }
@@ -26,7 +26,7 @@ func (t *Ticker) Tick() {
 
 	t.value += t.tickStep
 	if t.toAlarmValue > 0 {
-		t.lastBeforeAlarmValue -= int32(t.tickStep)
+		t.lastBeforeAlarmValue -= t.tickStep
 	}
 	time.Sleep(time.Duration(t.tickStep) * time.Second)
 }
@@ -52,5 +52,5 @@ func (t *Ticker) GetValue() uint32 {
 	t.mux.Lock()
 	defer t.mux.Unlock()
 
-	return t.value
+	return uint32(t.value)
 }

@@ -3,15 +3,27 @@ package main
 import (
 	"encoding/base64"
 	"fmt"
+	sentry "github.com/getsentry/sentry-go"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/rredkovich/amazingMafiaBotTG/game"
 	"github.com/rredkovich/amazingMafiaBotTG/types"
 	"log"
 	"os"
 	"strconv"
+	"time"
 )
 
 func main() {
+	release := os.Getenv("RELEASE_VERSION")
+	if sentryDSN := os.Getenv("SENTRY_DSN"); sentryDSN != "" {
+		sentry.Init(sentry.ClientOptions{
+			Dsn:         sentryDSN,
+			Release:     release,
+			Environment: os.Getenv("ENV_CONFIG"),
+		})
+		defer sentry.Recover()
+		defer sentry.Flush(time.Second * 5)
+	}
 
 	games := make(map[int64]*game.Game)
 	votes := make(map[string]*Vote)
@@ -48,7 +60,9 @@ func main() {
 				for _, voteMsg := range voteMsgs {
 					_, err := bot.Send(voteMsg)
 					if err != nil {
-						log.Printf("Cannot send vote message! \n%+v\n%+v\n", voteMsg, err)
+						msg := fmt.Sprintf("Cannot send vote message! \n%+v\n%+v\n", voteMsg, err)
+						log.Print(msg)
+						sentry.CaptureMessage(msg)
 					}
 				}
 			case game.StopVoteAction:
@@ -73,7 +87,9 @@ func main() {
 			_, err = bot.Send(tgMsg)
 
 			if err != nil {
-				log.Printf("Got error on send! %+v\n", err)
+				msg := fmt.Sprintf("Got error on send! %+v\n", err)
+				log.Print(msg)
+				sentry.CaptureException(err)
 			}
 
 			// handling case when game for chat has been stopped and we received last message with results
@@ -151,7 +167,7 @@ func main() {
 				continue
 			}
 
-			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+			//log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 			switch update.Message.IsCommand() {
 			case true:
 				switch game.CommandType(update.Message.Command()) {
@@ -191,7 +207,8 @@ func main() {
 					games[game.ChatID] = game
 					go game.Play(prepareTime)
 					log.Printf("Created game: %+v\n", game)
-					msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Ведется набор в игру \nстарт через %+v секунд\n\n%+v", prepareTime, note))
+					msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Ведется набор в игру, старт через <b>%+v</b> секунд\n\nВерсия бота: <b>%+v</b>\n\n%+v", prepareTime, release, note))
+					msg.ParseMode = "html"
 					msg.ReplyMarkup = kbd
 					bot.Send(msg)
 
@@ -223,6 +240,7 @@ func main() {
 					decodedGameID, err := strconv.ParseInt(string(decodedByte), 10, 64)
 					if err != nil {
 						fmt.Printf("Cannot parce game ID on start: %+v\n", err)
+						sentry.CaptureException(err)
 						continue
 					}
 					fmt.Printf("Got game id %+v\n", decodedGameID)

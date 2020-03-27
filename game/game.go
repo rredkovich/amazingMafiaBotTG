@@ -76,11 +76,11 @@ func (g *Game) Play(prepareTime uint32) {
 			log.Printf("Ending state %+v for game %+v ", g.State.GetState(), g.ChatID)
 			g.finalizeVotingFor(endingState)
 			g.ProcessCommands()
-			ended := g.TryToEnd()
+			ended, duration := g.TryToEnd()
 
 			if ended {
 				results := g.GetResults()
-				g.SendGroupMessage(results)
+				g.SendGroupMessage(fmt.Sprintf("%+v\n\nИгра длилась %+v секунд", results, duration))
 				return
 			}
 
@@ -616,12 +616,12 @@ func (g *Game) EndVoteGansters() {
 	g.ExecuteKill(mafiaResult)
 }
 
-func (g *Game) TryToEnd() bool {
+func (g *Game) TryToEnd() (bool, uint32) {
 	// cases when game should end:
 	// 1. Main. After night only two members are alive
 	if len(g.Members)-len(g.DeadMembers) <= 2 {
 		g.Stop()
-		return true
+		return true, g.ticker.GetValue()
 	}
 
 	shouldStop := true
@@ -638,7 +638,7 @@ func (g *Game) TryToEnd() bool {
 		g.Stop()
 	}
 
-	return shouldStop
+	return shouldStop, g.ticker.GetValue()
 }
 
 func (g *Game) GetResults() string {
