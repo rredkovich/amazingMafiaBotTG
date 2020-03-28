@@ -394,6 +394,7 @@ func (g *Game) ProcessCommands() {
 		g.DeadMembers[user.UserName] = user
 
 		if g.Commissar == user {
+			// TODO should special roles players be nilified after death?..
 			g.Commissar = nil
 			g.commissarVote = nil
 		}
@@ -507,6 +508,7 @@ func (g *Game) StartVoteLynch() {
 	g.votesCh <- &vcmd
 }
 
+// TODO tests game doesn't crash on vote when g.Doctor == nil
 func (g *Game) StartVoteDoctor() {
 	if g.Doctor == nil || g.DoctorIsDead() {
 		return
@@ -538,6 +540,7 @@ func (g *Game) StartVoteDoctor() {
 	g.votesCh <- &vcmd
 }
 
+// TODO tests game doesn't crash on vote when g.Commissar == nil
 func (g *Game) StartVoteCommissar() {
 	if g.Commissar == nil || g.CommissarIsDead() {
 		return
@@ -578,7 +581,7 @@ func (g *Game) DoctorIsDead() bool {
 
 func (g *Game) CommissarIsDead() bool {
 	if g.Commissar == nil {
-		return false
+		return true
 	}
 	_, dead := g.DeadMembers[g.Commissar.UserName]
 	return dead
@@ -612,7 +615,7 @@ func (g *Game) finalizeVotingFor(st State) {
 }
 
 func (g *Game) EndVoteCommissar() {
-	if g.Commissar == nil || g.CommissarIsDead()  {
+	if g.Commissar == nil || g.CommissarIsDead() {
 		return
 	}
 	g.commissarVote.Action = StopVoteAction
@@ -633,7 +636,7 @@ func (g *Game) EndVoteCommissar() {
 }
 
 func (g *Game) EndVoteDoctor() {
-	if g.Doctor == nil || g.DoctorIsDead()  {
+	if g.Doctor == nil || g.DoctorIsDead() {
 		return
 	}
 	g.doctorVote.Action = StopVoteAction

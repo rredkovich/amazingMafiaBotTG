@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"github.com/rredkovich/amazingMafiaBotTG/types"
 	"testing"
 )
@@ -29,7 +30,8 @@ func TestGame_AssignRoles_ThreeUsers(t *testing.T) {
 	}
 
 	ch := make(chan GameMessage)
-	g := NewGame(0, "Three users", &u0, &ch)
+	vch := make(chan *VoteCommand)
+	g := NewGame(0, "Three users", &u0, &ch, vch)
 	g.State.SetPrepairing()
 	g.AddMember(&u1)
 	g.AddMember(&u2)
@@ -104,7 +106,8 @@ func TestGame_AssignRoles_SixUsers(t *testing.T) {
 	}
 
 	ch := make(chan GameMessage)
-	g := NewGame(0, "Six users", &u0, &ch)
+	vch := make(chan *VoteCommand)
+	g := NewGame(0, "Six users", &u0, &ch, vch)
 	g.State.SetPrepairing()
 	g.AddMember(&u1)
 	g.AddMember(&u2)
@@ -134,5 +137,35 @@ func TestGame_AssignRoles_SixUsers(t *testing.T) {
 	_, comIsGangsta := g.GangsterMembers[g.Commissar.UserName]
 	if comIsGangsta {
 		t.Errorf("Commissar was chosen as a gangster")
+	}
+}
+
+func TestGame_SpecRoleIsDead(t *testing.T) {
+	u0 := types.TGUser{
+		ID:        1,
+		UserName:  "U1",
+		FirstName: "User",
+		LastName:  "Zero",
+		Role:      "",
+	}
+
+	mch := make(chan GameMessage)
+	vch := make(chan *VoteCommand)
+
+	g := NewGame(100, "test", &u0, &mch, vch)
+	g.Commissar = nil
+	g.Doctor = nil
+
+	comDead := g.CommissarIsDead()
+	docDead := g.DoctorIsDead()
+
+	if !comDead {
+		t.Errorf("Commissar is not dead when g.Commisar == nil")
+	}
+
+	if !docDead {
+		fmt.Printf("docDead %v", docDead)
+		t.Errorf("Doctor is not dead when g.Doctor == nil")
+
 	}
 }

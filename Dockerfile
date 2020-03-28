@@ -14,8 +14,8 @@ COPY --from=builder /build/mafiabot /app/
 WORKDIR /app
 COPY *.go ./
 # source code for sentry
-COPY /authorization ./
-COPY /game ./
-COPY /types ./
+COPY /authorization ./authorization
+COPY /game ./game
+COPY /types ./types
 
 CMD ["./mafiabot"]
