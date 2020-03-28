@@ -1,0 +1,22 @@
+version: '3.7'
+
+services:
+  bot:
+    image: registry.gitlab.com/rentforme/nginx:sk-production
+    restart: unless-stopped
+    labels:
+      com.centurylinklabs.watchtower.enable: true
+    environment:
+      - TG_API_TOKEN=1076167769:AAHqhFwoussdDUXKdjNCHZaiKT-Q74r2sp8
+      - SENTRY_DSN=https://5543d6176d444bf18b239b087a4a025d@sentry:dg9:eu/6
+      - ENV_CONFIG=development
+
+  watchtower:
+    image: containrrr/watchtower:0.3.10
+    command: --cleanup --label-enable --interval=120
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/$USER/.docker/config.json/:/config.json:ro
+
+
