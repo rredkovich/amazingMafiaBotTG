@@ -39,8 +39,8 @@ func main() {
 
 	bot.Debug = false // Has the library display every request and response.
 
-	log.Println("Mafia bot has been started")
-	log.Printf("Authorized on account %s", bot.Self.UserName)
+	log.Printf("Mafia bot has been started, ver: %+v, env: %+v\n", release, os.Getenv("ENV_CONFIG"))
+	log.Printf("Authorized on account: %+v\n", bot.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 10

@@ -508,7 +508,7 @@ func (g *Game) StartVoteLynch() {
 }
 
 func (g *Game) StartVoteDoctor() {
-	if g.DoctorIsDead() {
+	if g.Doctor == nil || g.DoctorIsDead() {
 		return
 	}
 	//g.SendPrivateMessage("Кого будем лечить?", g.Doctor)
@@ -539,7 +539,7 @@ func (g *Game) StartVoteDoctor() {
 }
 
 func (g *Game) StartVoteCommissar() {
-	if g.CommissarIsDead() {
+	if g.Commissar == nil || g.CommissarIsDead() {
 		return
 	}
 
@@ -569,11 +569,17 @@ func (g *Game) StartVoteCommissar() {
 }
 
 func (g *Game) DoctorIsDead() bool {
+	if g.Doctor == nil {
+		return true
+	}
 	_, dead := g.DeadMembers[g.Doctor.UserName]
 	return dead
 }
 
 func (g *Game) CommissarIsDead() bool {
+	if g.Commissar == nil {
+		return false
+	}
 	_, dead := g.DeadMembers[g.Commissar.UserName]
 	return dead
 }
@@ -606,7 +612,7 @@ func (g *Game) finalizeVotingFor(st State) {
 }
 
 func (g *Game) EndVoteCommissar() {
-	if g.CommissarIsDead() || g.Commissar == nil {
+	if g.Commissar == nil || g.CommissarIsDead()  {
 		return
 	}
 	g.commissarVote.Action = StopVoteAction
@@ -627,7 +633,7 @@ func (g *Game) EndVoteCommissar() {
 }
 
 func (g *Game) EndVoteDoctor() {
-	if g.DoctorIsDead() || g.Doctor == nil {
+	if g.Doctor == nil || g.DoctorIsDead()  {
 		return
 	}
 	g.doctorVote.Action = StopVoteAction
