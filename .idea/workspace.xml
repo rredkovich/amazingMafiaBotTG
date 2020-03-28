@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f7dad795-4095-43e7-b98e-ee1bb0cc477e" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mafiabot" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.gitlab-ci.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/todos_and_bugs.md" beforeDir="false" afterPath="$PROJECT_DIR$/todos_and_bugs.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -130,7 +128,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="Sandbox" />
     <MESSAGE value="Syntax fixes for subpackages" />
     <MESSAGE value="Participants of the game" />
     <MESSAGE value="Game start/end" />
@@ -155,7 +152,8 @@
     <MESSAGE value="Sentry config. Game duration time" />
     <MESSAGE value="Dead notes" />
     <MESSAGE value="Death notes &amp;&amp; varios stuff&#10;- Mafia vote altogether before notification in general chat&#10;- Votes text different to lynch and mafia vote&#10;- Alive roles send in beginning of each day&#10;- Death notes" />
-    <option name="LAST_COMMIT_MESSAGE" value="Death notes &amp;&amp; varios stuff&#10;- Mafia vote altogether before notification in general chat&#10;- Votes text different to lynch and mafia vote&#10;- Alive roles send in beginning of each day&#10;- Death notes" />
+    <MESSAGE value="Dockerfile" />
+    <option name="LAST_COMMIT_MESSAGE" value="Dockerfile" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
@@ -181,46 +179,46 @@
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
     <state x="699" y="613" key="#xdebugger.evaluate/0.0.2560.1440@0.0.2560.1440" timestamp="1585145530502" />
-    <state x="224" y="97" width="1502" height="1087" key="CommitChangelistDialog2" timestamp="1585348069175">
+    <state x="224" y="97" width="1502" height="1087" key="CommitChangelistDialog2" timestamp="1585349241822">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state x="224" y="97" width="1502" height="1087" key="CommitChangelistDialog2/0.0.2560.1440@0.0.2560.1440" timestamp="1585348069175" />
+    <state x="224" y="97" width="1502" height="1087" key="CommitChangelistDialog2/0.0.2560.1440@0.0.2560.1440" timestamp="1585349241822" />
     <state x="962" y="501" width="635" height="555" key="EnvironmentVariablesDialog" timestamp="1585348702338">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
     <state x="962" y="501" width="635" height="555" key="EnvironmentVariablesDialog/0.0.2560.1440@0.0.2560.1440" timestamp="1585348702338" />
-    <state width="2512" height="319" key="GridCell.Tab.0.bottom" timestamp="1585348371142">
+    <state width="2512" height="319" key="GridCell.Tab.0.bottom" timestamp="1585349250372">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="319" key="GridCell.Tab.0.bottom/0.0.2560.1440@0.0.2560.1440" timestamp="1585348371142" />
-    <state width="2512" height="319" key="GridCell.Tab.0.center" timestamp="1585348371142">
+    <state width="2512" height="319" key="GridCell.Tab.0.bottom/0.0.2560.1440@0.0.2560.1440" timestamp="1585349250372" />
+    <state width="2512" height="319" key="GridCell.Tab.0.center" timestamp="1585349250371">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="319" key="GridCell.Tab.0.center/0.0.2560.1440@0.0.2560.1440" timestamp="1585348371142" />
-    <state width="2512" height="319" key="GridCell.Tab.0.left" timestamp="1585348371141">
+    <state width="2512" height="319" key="GridCell.Tab.0.center/0.0.2560.1440@0.0.2560.1440" timestamp="1585349250371" />
+    <state width="2512" height="319" key="GridCell.Tab.0.left" timestamp="1585349250370">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="319" key="GridCell.Tab.0.left/0.0.2560.1440@0.0.2560.1440" timestamp="1585348371141" />
-    <state width="2512" height="319" key="GridCell.Tab.0.right" timestamp="1585348371142">
+    <state width="2512" height="319" key="GridCell.Tab.0.left/0.0.2560.1440@0.0.2560.1440" timestamp="1585349250370" />
+    <state width="2512" height="319" key="GridCell.Tab.0.right" timestamp="1585349250372">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="319" key="GridCell.Tab.0.right/0.0.2560.1440@0.0.2560.1440" timestamp="1585348371142" />
-    <state width="2512" height="319" key="GridCell.Tab.1.bottom" timestamp="1585348371142">
+    <state width="2512" height="319" key="GridCell.Tab.0.right/0.0.2560.1440@0.0.2560.1440" timestamp="1585349250372" />
+    <state width="2512" height="319" key="GridCell.Tab.1.bottom" timestamp="1585349250374">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="319" key="GridCell.Tab.1.bottom/0.0.2560.1440@0.0.2560.1440" timestamp="1585348371142" />
-    <state width="2512" height="319" key="GridCell.Tab.1.center" timestamp="1585348371142">
+    <state width="2512" height="319" key="GridCell.Tab.1.bottom/0.0.2560.1440@0.0.2560.1440" timestamp="1585349250374" />
+    <state width="2512" height="319" key="GridCell.Tab.1.center" timestamp="1585349250373">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="319" key="GridCell.Tab.1.center/0.0.2560.1440@0.0.2560.1440" timestamp="1585348371142" />
-    <state width="2512" height="319" key="GridCell.Tab.1.left" timestamp="1585348371142">
+    <state width="2512" height="319" key="GridCell.Tab.1.center/0.0.2560.1440@0.0.2560.1440" timestamp="1585349250373" />
+    <state width="2512" height="319" key="GridCell.Tab.1.left" timestamp="1585349250373">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="319" key="GridCell.Tab.1.left/0.0.2560.1440@0.0.2560.1440" timestamp="1585348371142" />
-    <state width="2512" height="319" key="GridCell.Tab.1.right" timestamp="1585348371142">
+    <state width="2512" height="319" key="GridCell.Tab.1.left/0.0.2560.1440@0.0.2560.1440" timestamp="1585349250373" />
+    <state width="2512" height="319" key="GridCell.Tab.1.right" timestamp="1585349250373">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="319" key="GridCell.Tab.1.right/0.0.2560.1440@0.0.2560.1440" timestamp="1585348371142" />
+    <state width="2512" height="319" key="GridCell.Tab.1.right/0.0.2560.1440@0.0.2560.1440" timestamp="1585349250373" />
     <state x="867" y="495" key="IDE.errors.dialog" timestamp="1584798963873">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
@@ -229,18 +227,18 @@
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
     <state x="773" y="384" key="SettingsEditor/0.0.2560.1440@0.0.2560.1440" timestamp="1585335086577" />
-    <state x="879" y="485" key="Vcs.Push.Dialog.v2" timestamp="1585348070530">
+    <state x="879" y="485" key="Vcs.Push.Dialog.v2" timestamp="1585349242797">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state x="879" y="485" key="Vcs.Push.Dialog.v2/0.0.2560.1440@0.0.2560.1440" timestamp="1585348070530" />
+    <state x="879" y="485" key="Vcs.Push.Dialog.v2/0.0.2560.1440@0.0.2560.1440" timestamp="1585349242797" />
     <state width="1279" height="703" key="XDebugger.FullValuePopup" timestamp="1585138818208">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
     <state width="1279" height="703" key="XDebugger.FullValuePopup/0.0.2560.1440@0.0.2560.1440" timestamp="1585138818208" />
-    <state x="808" y="425" width="934" height="773" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1585348398282">
+    <state x="808" y="425" width="934" height="773" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1585349087627">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state x="808" y="425" width="934" height="773" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/0.0.2560.1440@0.0.2560.1440" timestamp="1585348398282" />
+    <state x="808" y="425" width="934" height="773" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/0.0.2560.1440@0.0.2560.1440" timestamp="1585349087627" />
     <state x="730" y="803" width="695" height="413" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1585341034139">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>

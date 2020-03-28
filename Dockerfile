@@ -6,8 +6,8 @@ RUN go build -o mafiabot .
 
 
 FROM alpine
-ARG RELEASE_VERSION
-ENV RELEASE_VERSION=$RELEASE_VERSION
+ARG release_version
+ENV RELEASE_VERSION=$release_version
 RUN adduser -S -D -H -h /app bot
 USER bot
 COPY --from=builder /build/mafiabot /app/
