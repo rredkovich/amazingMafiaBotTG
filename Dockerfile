@@ -17,5 +17,6 @@ COPY *.go ./
 COPY /authorization ./authorization
 COPY /game ./game
 COPY /types ./types
+COPY /templates ./templates
 
 CMD ["./mafiabot"]
