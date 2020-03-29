@@ -9,22 +9,22 @@ import (
 )
 
 type TGVoteValue struct {
-	UUID        ksuid.KSUID
-	VoteID      string
-	GroupChatID int64
-	Value       string
-	User        *tgbotapi.User
-	Avalability game.VoteAvailability
+	UUID         ksuid.KSUID
+	VoteID       string
+	GroupChatID  int64
+	Value        string
+	User         *tgbotapi.User
+	Availability game.VoteAvailability
 }
 
 func NewTGVoteValue(voteID string, groupChatID int64, value string, av game.VoteAvailability) *TGVoteValue {
 	uuid := ksuid.New()
 	return &TGVoteValue{
-		VoteID:      voteID,
-		GroupChatID: groupChatID,
-		Value:       value,
-		UUID:        uuid,
-		Avalability: av,
+		VoteID:       voteID,
+		GroupChatID:  groupChatID,
+		Value:        value,
+		UUID:         uuid,
+		Availability: av,
 	}
 }
 
@@ -40,11 +40,12 @@ type Vote struct {
 	VoteAvailability game.VoteAvailability
 	Voters           []*types.TGUser
 	Values           []*game.VoteCommandValue
+	Votes            map[*tgbotapi.User]string
+	botLink          string
 	//Votes map[*types.TGUser]*game.VoteCommandValue
-	Votes map[*tgbotapi.User]string
 }
 
-func NewVoteFromVoteCommand(vcmd *game.VoteCommand, ID string) *Vote {
+func NewVoteFromVoteCommand(vcmd *game.VoteCommand, ID string, botLink string) *Vote {
 	return &Vote{
 		ID,
 		vcmd.GameChatID,
@@ -54,6 +55,7 @@ func NewVoteFromVoteCommand(vcmd *game.VoteCommand, ID string) *Vote {
 		vcmd.Voters,
 		vcmd.Values,
 		make(map[*tgbotapi.User]string),
+		botLink,
 	}
 }
 
@@ -67,7 +69,7 @@ func (v *Vote) StartVote(votes map[string]*TGVoteValue) []*tgbotapi.MessageConfi
 		groupMsg := tgbotapi.NewMessage(v.GameChatID, v.VoteText)
 		kbd := tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonURL("Голосовать", "https://t.me/amafia_bot"),
+				tgbotapi.NewInlineKeyboardButtonURL("Голосовать", v.botLink),
 			),
 		)
 		groupMsg.ReplyMarkup = kbd

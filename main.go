@@ -7,6 +7,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/rredkovich/amazingMafiaBotTG/game"
 	"github.com/rredkovich/amazingMafiaBotTG/types"
+	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
@@ -15,15 +16,25 @@ import (
 
 func main() {
 	release := os.Getenv("RELEASE_VERSION")
+	envConfig := os.Getenv("ENV_CONFIG")
+	botLink := ""
+	if envConfig == "production" {
+		botLink = "https://t.me/amafia_bot"
+	} else {
+		botLink = "https://t.me/alpha_amafia_bot"
+	}
+
 	if sentryDSN := os.Getenv("SENTRY_DSN"); sentryDSN != "" {
 		sentry.Init(sentry.ClientOptions{
 			Dsn:         sentryDSN,
 			Release:     release,
-			Environment: os.Getenv("ENV_CONFIG"),
+			Environment: envConfig,
 		})
 		defer sentry.Recover()
 		defer sentry.Flush(time.Second * 5)
 	}
+
+	note, err := ioutil.ReadFile("templates/release_notes.txt")
 
 	games := make(map[int64]*game.Game)
 	votes := make(map[string]*Vote)
@@ -39,7 +50,7 @@ func main() {
 
 	bot.Debug = false // Has the library display every request and response.
 
-	log.Printf("Mafia bot has been started, ver: %+v, env: %+v\n", release, os.Getenv("ENV_CONFIG"))
+	log.Printf("Mafia bot has been started, ver: %+v, env: %+v\n", release, envConfig)
 	log.Printf("Authorized on account: %+v\n", bot.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
@@ -54,7 +65,7 @@ func main() {
 			log.Printf("Got vote command %+v\n", cmd)
 			switch cmd.Action {
 			case game.StartVoteAction:
-				vote := NewVoteFromVoteCommand(cmd, voteKey)
+				vote := NewVoteFromVoteCommand(cmd, voteKey, botLink)
 				votes[voteKey] = vote
 				voteMsgs := vote.StartVote(tgVotes)
 				for _, voteMsg := range voteMsgs {
@@ -177,7 +188,7 @@ func main() {
 				case game.LaunchNewGame:
 					gameID := update.Message.Chat.ID
 
-					// TODO /test cannot start game if started
+					// TODO test cannot start game if started
 					// TODO /notify "game already started" if '/game' received again
 					g, ok := games[gameID]
 					if ok && !g.State.IsStopped() {
@@ -197,23 +208,27 @@ func main() {
 						tgbotapi.NewInlineKeyboardRow(
 							tgbotapi.NewInlineKeyboardButtonURL(
 								"Присоединиться",
-								fmt.Sprintf("https://t.me/amafia_bot?start=%+v", encodedGameID),
+								fmt.Sprintf(botLink+"?start=%+v", encodedGameID),
 							),
 						),
 					)
 
 					from := update.Message.From
 					starter := types.NewTGUser(from.ID, from.UserName, from.FirstName, from.LastName)
-					prepareTime := uint32(45)
+					prepareTime := uint32(15)
 					game := game.NewGame(update.Message.Chat.ID, update.Message.Chat.Title, starter,
 						&messagesFromGames, voteCommandsFromGames)
 					games[game.ChatID] = game
 					go game.Play(prepareTime)
 					log.Printf("Created game: %+v\n", game)
-					msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Ведется набор в игру, старт через <b>%+v</b> секунд\n\nВерсия бота: <b>%+v</b>\n\n%+v", prepareTime, release, note))
+
+					msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Ведется набор в игру, старт через <b>%+v</b> секунд\n\nВерсия бота: <b>%+v</b>\n\n%s", prepareTime, release, note))
 					msg.ParseMode = "html"
 					msg.ReplyMarkup = kbd
-					bot.Send(msg)
+					_, err = bot.Send(msg)
+					if err != nil {
+						sentry.CaptureException(err)
+					}
 
 				case game.EndGame:
 					game, ok := games[update.Message.Chat.ID]
@@ -231,6 +246,7 @@ func main() {
 
 					if err != nil {
 						log.Printf("Got error on send! %+v\n", err)
+						sentry.CaptureException(err)
 					}
 				case game.Start:
 					// Expecting new user trying to add himself to the game
@@ -250,7 +266,10 @@ func main() {
 					startedGame, ok := games[decodedGameID]
 					if !ok {
 						gameDead := tgbotapi.NewMessage(update.Message.Chat.ID, "Игры нет, возможно закончилась?..")
-						bot.Send(gameDead)
+						_, err = bot.Send(gameDead)
+						if err != nil {
+							sentry.CaptureException(err)
+						}
 						continue
 					}
 
@@ -266,9 +285,15 @@ func main() {
 						text := fmt.Sprintf("[%+v %+v](tg://user?id=%+v) в игре, всего %+v", from.FirstName, from.LastName, from.ID, startedGame.MembersCount())
 						announcement := tgbotapi.NewMessage(startedGame.ChatID, text)
 						announcement.ParseMode = "markdown"
-						bot.Send(announcement)
+						_, err = bot.Send(announcement)
+						if err != nil {
+							sentry.CaptureException(err)
+						}
 					}
-					bot.Send(answer)
+					_, err = bot.Send(answer)
+					if err != nil {
+						sentry.CaptureException(err)
+					}
 				case game.ExtendRegistrationTime:
 					game, ok := games[update.Message.Chat.ID]
 					if !ok {
@@ -285,7 +310,10 @@ func main() {
 
 				}
 				toDelete := tgbotapi.NewDeleteMessage(update.Message.Chat.ID, update.Message.MessageID)
-				bot.DeleteMessage(toDelete)
+				_, err = bot.DeleteMessage(toDelete)
+				if err != nil {
+					sentry.CaptureException(err)
+				}
 			case false:
 				game, ok := games[update.Message.Chat.ID]
 				if !ok {
@@ -298,6 +326,9 @@ func main() {
 				if !game.UserCouldTalk(update.Message.From.UserName) {
 					dcfg := tgbotapi.NewDeleteMessage(update.Message.Chat.ID, update.Message.MessageID)
 					bot.DeleteMessage(dcfg)
+					if err != nil {
+						sentry.CaptureException(err)
+					}
 				}
 			}
 

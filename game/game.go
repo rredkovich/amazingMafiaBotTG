@@ -32,12 +32,10 @@ type Game struct {
 
 func NewGame(ChatID int64, ChatTitle string, GameInitiator *types.TGUser,
 	messagesCh *chan GameMessage, votesCh chan *VoteCommand) *Game {
-	// TODO: test for game initiator added as a participant
 	members := make(map[string]*types.TGUser)
-	members[GameInitiator.UserName] = GameInitiator
 	ticker := Ticker{tickStep: 1}
 
-	return &Game{
+	g := Game{
 		ChatID:          ChatID,
 		ChatTitle:       ChatTitle,
 		GameInitiator:   *GameInitiator,
@@ -49,6 +47,11 @@ func NewGame(ChatID int64, ChatTitle string, GameInitiator *types.TGUser,
 		ticker:          ticker,
 		r:               rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
+
+	g.assignBaseRole(&g.GameInitiator)
+	g.Members[GameInitiator.UserName] = &g.GameInitiator
+
+	return &g
 }
 
 func (g *Game) Play(prepareTime uint32) {
@@ -60,10 +63,13 @@ func (g *Game) Play(prepareTime uint32) {
 
 	for !g.State.IsStopped() {
 		currentState := g.State.GetState()
+		if currentState == Preparing && g.ticker.lastBeforeAlarmValue == 30 {
+			g.SendGroupMessage("Игра начинается через 30 секунд")
+		}
 		if g.ticker.Alarm() {
 			if currentState == Preparing {
-				// TODO !!! Game should be removed from list of games immideatly after that, memory leak !!!
-				if len(g.Members) < 3 {
+				// TODO !!! Game should be removed from list of games in main thread immideatly after that, memory leak !!!
+				if len(g.Members) < 4 {
 					g.State.SetStopped()
 					g.SendGroupMessage("Слишком мало людей, мафейка не состоится")
 					return
@@ -142,7 +148,6 @@ func (g *Game) SendPrivateMessage(msg string, user *types.TGUser) {
 
 // SendWelcomeMessages sends all users information about their roles
 func (g *Game) SendWelcomeMessages() {
-	// TODO set Role field in TGUser, use switch-case -> no need for continue here
 	for _, user := range g.Members {
 		if user == g.Commissar {
 			i := g.r.Intn(len(commissarDescriptions))
@@ -181,7 +186,7 @@ func (g *Game) AddMember(u *types.TGUser) error {
 	_, ok := g.Members[u.UserName]
 
 	if !ok {
-		u.Role = "Мирный житель"
+		g.assignBaseRole(u)
 		g.Members[u.UserName] = u
 		// Cannot send messages from goroutine while
 
@@ -198,12 +203,12 @@ func (g *Game) AddMember(u *types.TGUser) error {
 	return nil
 }
 
-// TODO: tests
 func (g *Game) UserInGame(u *types.TGUser) bool {
 	_, ok := g.Members[u.UserName]
 	return ok
 }
 
+// TODO: test UserCouldTalk
 func (g *Game) UserCouldTalk(userName string) bool {
 	// TODO test everybody could talk while gathering people for the game
 	if g.State.state == Preparing {
@@ -230,6 +235,7 @@ func (g *Game) UserCouldTalk(userName string) bool {
 	return true
 }
 
+// TODO test ProcessInGameDirectMessage
 func (g *Game) ProcessInGameDirectMessage(userName string, msg string) {
 	_, inGame := g.Members[userName]
 	if !inGame {
@@ -242,6 +248,7 @@ func (g *Game) ProcessInGameDirectMessage(userName string, msg string) {
 	}
 }
 
+// TODO test DeadWantsToTalk
 func (g *Game) DeadWantsToTalk(u *types.TGUser, msg string) {
 	if !u.SpokenLastWords {
 		i := g.r.Intn(len(deadNotes))
@@ -283,18 +290,21 @@ func (g *Game) AssignRoles() {
 	g.Doctor = g.Members[memberNames[doctorInd]]
 	g.Doctor.Role = types.Doctor
 
-	// TODO Dirty hack to assign commissar
-	g.Commissar = g.Doctor
-	for g.Commissar == g.Doctor {
-		commissarInd := g.r.Intn(randMax)
-		g.Commissar = g.Members[memberNames[commissarInd]]
+	// no commissar for games less of 4 members
+	if len(g.Members) > 4 {
+		// TODO Dirty hack to assign commissar
+		g.Commissar = g.Doctor
+		for g.Commissar == g.Doctor {
+			commissarInd := g.r.Intn(randMax)
+			g.Commissar = g.Members[memberNames[commissarInd]]
+		}
+		g.Commissar.Role = types.Commissar
 	}
-	g.Commissar.Role = types.Commissar
 
 	ganstersNum := len(g.Members) / 3
 
 	ganstersAllSet := false
-	// TODO Scary shit, could be infinite loop
+	// TODO Scary shit, could be infinite loop while setting gangsters
 	for !ganstersAllSet {
 		gansterName := memberNames[g.r.Intn(randMax)]
 		ganster := g.Members[gansterName]
@@ -312,7 +322,7 @@ func (g *Game) AssignRoles() {
 	}
 }
 
-// ExecuteKill marks member to be killed if command is not nil
+// ExecuteKill marks a member to be killed if command is not nil
 func (g *Game) ExecuteKill(value *VoteCommandValue) {
 	if value == nil {
 		return
@@ -327,7 +337,7 @@ func (g *Game) ExecuteKill(value *VoteCommandValue) {
 	g.Commands = append([]InGameCommand{cmd}, g.Commands...)
 }
 
-// ExecuteHeal marks member to be healed if command is not nil
+// ExecuteHeal marks a member to be healed if command is not nil
 func (g *Game) ExecuteHeal(value *VoteCommandValue) {
 	if value == nil {
 		return
@@ -685,7 +695,7 @@ func (g *Game) TryToEnd() (bool, uint32) {
 
 	shouldStop := true
 	// 1. No more gangsters
-	for gangsterUsername, _ := range g.GangsterMembers {
+	for gangsterUsername := range g.GangsterMembers {
 		_, dead := g.DeadMembers[gangsterUsername]
 		if !dead {
 			shouldStop = false
@@ -767,4 +777,9 @@ func (g *Game) ListAlive() string {
 
 	// cutting last ,
 	return text[:len(text)-1]
+}
+
+// assignBaseRole set base citizen role for member
+func (g *Game) assignBaseRole(m *types.TGUser) {
+	m.Role = types.Citizen
 }
