@@ -6,6 +6,7 @@ import (
 	"github.com/rredkovich/amazingMafiaBotTG/game"
 	"github.com/rredkovich/amazingMafiaBotTG/types"
 	"github.com/segmentio/ksuid"
+	"math"
 )
 
 type TGVoteValue struct {
@@ -189,6 +190,10 @@ func (v *Vote) EveryBodyVoted() bool {
 
 // EndVote returns result of a vote. nil if no one has voted
 func (v *Vote) EndVote() *game.VoteCommandValue {
+	if len(v.Votes) < int(math.Round(float64(len(v.Voters))/2)) {
+		return nil
+	}
+
 	counters := make(map[string]int)
 
 	for _, vote := range v.Votes {

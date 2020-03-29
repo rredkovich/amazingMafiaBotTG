@@ -4,13 +4,12 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f7dad795-4095-43e7-b98e-ee1bb0cc477e" name="Default Changelist" comment="Fixed nullptr on dead com/doc vote check">
-      <change afterPath="$PROJECT_DIR$/templates/release_notes.txt" afterDir="false" />
+    <list default="true" id="f7dad795-4095-43e7-b98e-ee1bb0cc477e" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/tgvote_test.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/game/game.go" beforeDir="false" afterPath="$PROJECT_DIR$/game/game.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/game_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/game/game_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/game/ticker.go" beforeDir="false" afterPath="$PROJECT_DIR$/game/ticker.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notes.go" beforeDir="false" afterPath="$PROJECT_DIR$/notes.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tgvote.go" beforeDir="false" afterPath="$PROJECT_DIR$/tgvote.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -117,15 +116,27 @@
       <filePath value="$PROJECT_DIR$/authorization/authorization_test.go" />
       <method v="2" />
     </configuration>
+    <configuration name="tgvote_test.go" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="amazingMafiaBotTG" />
+      <working_directory value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <kind value="FILE" />
+      <package value="github.com/rredkovich/amazingMafiaBotTG" />
+      <directory value="$PROJECT_DIR$/" />
+      <filePath value="$PROJECT_DIR$/tgvote_test.go" />
+      <method v="2" />
+    </configuration>
     <list>
       <item itemvalue="Go Build.go build" />
       <item itemvalue="Go Test.go test amazingMafiaBotTG" />
       <item itemvalue="Go Test.TestUserCouldModifyGame in github.com/rredkovich/amazingMafiaBotTG/authorization" />
       <item itemvalue="Go Test.game_test.go" />
+      <item itemvalue="Go Test.tgvote_test.go" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Go Build.go build" />
+        <item itemvalue="Go Test.tgvote_test.go" />
         <item itemvalue="Go Test.go test amazingMafiaBotTG" />
         <item itemvalue="Go Test.game_test.go" />
         <item itemvalue="Go Test.TestUserCouldModifyGame in github.com/rredkovich/amazingMafiaBotTG/authorization" />
@@ -137,7 +148,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="Groups dedication" />
     <MESSAGE value="Code restructorization by packes" />
     <MESSAGE value="Game functions" />
     <MESSAGE value="Adding new memember to started game" />
@@ -162,7 +172,8 @@
     <MESSAGE value="Testing image creation and sentry releases" />
     <MESSAGE value="Draft deployment docker-compose configuration" />
     <MESSAGE value="Fixed nullptr on dead com/doc vote check" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed nullptr on dead com/doc vote check" />
+    <MESSAGE value="No commisar for games with 4 members, various tests, alphaVersion of bot for develpment" />
+    <option name="LAST_COMMIT_MESSAGE" value="No commisar for games with 4 members, various tests, alphaVersion of bot for develpment" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
@@ -172,10 +183,10 @@
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
     <state x="1079" y="586" key="#Go_Modules/0.0.2560.1440@0.0.2560.1440" timestamp="1584651419411" />
-    <state x="913" y="431" key="#Inspections" timestamp="1585472132542">
+    <state x="913" y="431" width="732" height="607" key="#Inspections" timestamp="1585485227790">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state x="913" y="431" key="#Inspections/0.0.2560.1440@0.0.2560.1440" timestamp="1585472132542" />
+    <state x="913" y="431" width="732" height="607" key="#Inspections/0.0.2560.1440@0.0.2560.1440" timestamp="1585485227790" />
     <state x="230" y="402" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1585483719585">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
@@ -192,18 +203,18 @@
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
     <state x="1111" y="475" key="#xdebugger.XInspectDialog/0.0.2560.1440@0.0.2560.1440" timestamp="1584883354323" />
-    <state x="699" y="613" key="#xdebugger.evaluate" timestamp="1585469792130">
+    <state x="699" y="613" key="#xdebugger.evaluate" timestamp="1585486291733">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state x="699" y="613" key="#xdebugger.evaluate/0.0.2560.1440@0.0.2560.1440" timestamp="1585469792130" />
+    <state x="699" y="613" key="#xdebugger.evaluate/0.0.2560.1440@0.0.2560.1440" timestamp="1585486291733" />
     <state x="1021" y="600" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1" timestamp="1585472110223">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
     <state x="1021" y="600" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1/0.0.2560.1440@0.0.2560.1440" timestamp="1585472110223" />
-    <state x="226" y="31" width="1816" height="1407" key="CommitChangelistDialog2" timestamp="1585477909411">
+    <state x="226" y="31" width="1816" height="1407" key="CommitChangelistDialog2" timestamp="1585484594629">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state x="226" y="31" width="1816" height="1407" key="CommitChangelistDialog2/0.0.2560.1440@0.0.2560.1440" timestamp="1585477909411" />
+    <state x="226" y="31" width="1816" height="1407" key="CommitChangelistDialog2/0.0.2560.1440@0.0.2560.1440" timestamp="1585484594629" />
     <state x="962" y="501" width="635" height="555" key="EnvironmentVariablesDialog" timestamp="1585483718093">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
@@ -212,38 +223,38 @@
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
     <state x="1061" y="492" key="FileChooserDialogImpl/0.0.2560.1440@0.0.2560.1440" timestamp="1585472142495" />
-    <state width="2512" height="319" key="GridCell.Tab.0.bottom" timestamp="1585483873126">
+    <state width="2512" height="556" key="GridCell.Tab.0.bottom" timestamp="1585489031857">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="319" key="GridCell.Tab.0.bottom/0.0.2560.1440@0.0.2560.1440" timestamp="1585483873126" />
-    <state width="2512" height="319" key="GridCell.Tab.0.center" timestamp="1585483873126">
+    <state width="2512" height="556" key="GridCell.Tab.0.bottom/0.0.2560.1440@0.0.2560.1440" timestamp="1585489031857" />
+    <state width="2512" height="556" key="GridCell.Tab.0.center" timestamp="1585489031857">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="319" key="GridCell.Tab.0.center/0.0.2560.1440@0.0.2560.1440" timestamp="1585483873126" />
-    <state width="2512" height="319" key="GridCell.Tab.0.left" timestamp="1585483873126">
+    <state width="2512" height="556" key="GridCell.Tab.0.center/0.0.2560.1440@0.0.2560.1440" timestamp="1585489031857" />
+    <state width="2512" height="556" key="GridCell.Tab.0.left" timestamp="1585489031856">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="319" key="GridCell.Tab.0.left/0.0.2560.1440@0.0.2560.1440" timestamp="1585483873126" />
-    <state width="2512" height="319" key="GridCell.Tab.0.right" timestamp="1585483873126">
+    <state width="2512" height="556" key="GridCell.Tab.0.left/0.0.2560.1440@0.0.2560.1440" timestamp="1585489031856" />
+    <state width="2512" height="556" key="GridCell.Tab.0.right" timestamp="1585489031857">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="319" key="GridCell.Tab.0.right/0.0.2560.1440@0.0.2560.1440" timestamp="1585483873126" />
-    <state width="2512" height="319" key="GridCell.Tab.1.bottom" timestamp="1585483874964">
+    <state width="2512" height="556" key="GridCell.Tab.0.right/0.0.2560.1440@0.0.2560.1440" timestamp="1585489031857" />
+    <state width="2512" height="283" key="GridCell.Tab.1.bottom" timestamp="1585486752308">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="319" key="GridCell.Tab.1.bottom/0.0.2560.1440@0.0.2560.1440" timestamp="1585483874964" />
-    <state width="2512" height="319" key="GridCell.Tab.1.center" timestamp="1585483874964">
+    <state width="2512" height="283" key="GridCell.Tab.1.bottom/0.0.2560.1440@0.0.2560.1440" timestamp="1585486752308" />
+    <state width="2512" height="283" key="GridCell.Tab.1.center" timestamp="1585486752308">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="319" key="GridCell.Tab.1.center/0.0.2560.1440@0.0.2560.1440" timestamp="1585483874964" />
-    <state width="2512" height="319" key="GridCell.Tab.1.left" timestamp="1585483874963">
+    <state width="2512" height="283" key="GridCell.Tab.1.center/0.0.2560.1440@0.0.2560.1440" timestamp="1585486752308" />
+    <state width="2512" height="283" key="GridCell.Tab.1.left" timestamp="1585486752308">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="319" key="GridCell.Tab.1.left/0.0.2560.1440@0.0.2560.1440" timestamp="1585483874963" />
-    <state width="2512" height="319" key="GridCell.Tab.1.right" timestamp="1585483874964">
+    <state width="2512" height="283" key="GridCell.Tab.1.left/0.0.2560.1440@0.0.2560.1440" timestamp="1585486752308" />
+    <state width="2512" height="283" key="GridCell.Tab.1.right" timestamp="1585486752308">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state width="2512" height="319" key="GridCell.Tab.1.right/0.0.2560.1440@0.0.2560.1440" timestamp="1585483874964" />
+    <state width="2512" height="283" key="GridCell.Tab.1.right/0.0.2560.1440@0.0.2560.1440" timestamp="1585486752308" />
     <state x="867" y="495" key="IDE.errors.dialog" timestamp="1584798963873">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
@@ -256,18 +267,18 @@
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
     <state x="815" y="703" width="540" height="524" key="StructurePopup/0.0.2560.1440@0.0.2560.1440" timestamp="1585472161629" />
-    <state x="879" y="485" key="Vcs.Push.Dialog.v2" timestamp="1585432578027">
+    <state x="879" y="485" key="Vcs.Push.Dialog.v2" timestamp="1585484596239">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state x="879" y="485" key="Vcs.Push.Dialog.v2/0.0.2560.1440@0.0.2560.1440" timestamp="1585432578027" />
+    <state x="879" y="485" key="Vcs.Push.Dialog.v2/0.0.2560.1440@0.0.2560.1440" timestamp="1585484596239" />
     <state width="1279" height="703" key="XDebugger.FullValuePopup" timestamp="1585138818208">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
     <state width="1279" height="703" key="XDebugger.FullValuePopup/0.0.2560.1440@0.0.2560.1440" timestamp="1585138818208" />
-    <state x="808" y="425" width="934" height="773" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1585483868247">
+    <state x="808" y="425" width="934" height="773" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1585486330176">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state x="808" y="425" width="934" height="773" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/0.0.2560.1440@0.0.2560.1440" timestamp="1585483868247" />
+    <state x="808" y="425" width="934" height="773" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/0.0.2560.1440@0.0.2560.1440" timestamp="1585486330176" />
     <state x="730" y="803" width="695" height="413" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1585478471420">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
@@ -276,10 +287,10 @@
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
     <state x="1117" y="506" width="831" height="513" key="refactoring.ChangeSignatureDialog/0.0.2560.1440@0.0.2560.1440" timestamp="1585319972535" />
-    <state x="942" y="351" width="672" height="678" key="search.everywhere.popup" timestamp="1585468765324">
+    <state x="942" y="351" width="672" height="678" key="search.everywhere.popup" timestamp="1585486940271">
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
-    <state x="942" y="351" width="672" height="678" key="search.everywhere.popup/0.0.2560.1440@0.0.2560.1440" timestamp="1585468765324" />
+    <state x="942" y="351" width="672" height="678" key="search.everywhere.popup/0.0.2560.1440@0.0.2560.1440" timestamp="1585486940271" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -296,7 +307,7 @@
         </line-breakpoint>
         <line-breakpoint type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/game/game.go</url>
-          <line>89</line>
+          <line>95</line>
           <option name="timeStamp" value="53" />
         </line-breakpoint>
         <line-breakpoint type="DlvLineBreakpoint">
@@ -305,32 +316,32 @@
         </line-breakpoint>
         <line-breakpoint type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/game/game.go</url>
-          <line>380</line>
+          <line>386</line>
           <option name="timeStamp" value="66" />
         </line-breakpoint>
         <line-breakpoint type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/game/game.go</url>
-          <line>567</line>
+          <line>573</line>
           <option name="timeStamp" value="69" />
         </line-breakpoint>
         <line-breakpoint type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/game/game.go</url>
-          <line>77</line>
+          <line>83</line>
           <option name="timeStamp" value="73" />
         </line-breakpoint>
         <line-breakpoint type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/game/game.go</url>
-          <line>617</line>
+          <line>623</line>
           <option name="timeStamp" value="96" />
         </line-breakpoint>
         <line-breakpoint type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/tgvote.go</url>
-          <line>216</line>
+          <line>221</line>
           <option name="timeStamp" value="108" />
         </line-breakpoint>
         <line-breakpoint type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/game/game.go</url>
-          <line>122</line>
+          <line>128</line>
           <option name="timeStamp" value="110" />
         </line-breakpoint>
         <line-breakpoint type="DlvLineBreakpoint">
@@ -340,12 +351,12 @@
         </line-breakpoint>
         <line-breakpoint type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/game/game.go</url>
-          <line>271</line>
+          <line>277</line>
           <option name="timeStamp" value="126" />
         </line-breakpoint>
         <line-breakpoint type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/game/game.go</url>
-          <line>690</line>
+          <line>696</line>
           <option name="timeStamp" value="127" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
@@ -362,9 +373,8 @@
     </breakpoint-manager>
     <watches-manager>
       <configuration name="GoTestRunConfiguration">
-        <watch expression="*(*&quot;github.com/rredkovich/amazingMafiaBotTG/types.TGUser&quot;)(824634572880)" />
-        <watch expression="*(*&quot;string&quot;)(824634572888)" language="go" />
-        <watch expression="gansterName" />
+        <watch expression="*(*&quot;map[*github.com/go-telegram-bot-api/telegram-bot-api.User]string&quot;)(824634121904)" />
+        <watch expression="*(*&quot;[]*github.com/rredkovich/amazingMafiaBotTG/types.TGUser&quot;)(824634121856)" />
       </configuration>
     </watches-manager>
   </component>

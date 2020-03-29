@@ -6,11 +6,12 @@ import (
 )
 
 type Ticker struct {
-	mux                  sync.Mutex
-	value                int32
-	tickStep             int32
-	toAlarmValue         int32
-	lastBeforeAlarmValue int32
+	mux                     sync.Mutex
+	value                   int32
+	tickStep                int32
+	toAlarmValue            int32
+	lastBeforeAlarmValue    int32
+	beforeAlarmNotification int32
 }
 
 func (t *Ticker) Alarm() bool {
@@ -37,6 +38,7 @@ func (t *Ticker) RaiseAlarm(seconds uint32) {
 
 	t.toAlarmValue = int32(seconds) // could be negative if tickStep != 1
 	t.lastBeforeAlarmValue = int32(seconds)
+	t.beforeAlarmNotification = 30 // default notification time is 30 seconds
 }
 
 // PostponeAlarm moves alarm to seconds ahead
@@ -46,6 +48,15 @@ func (t *Ticker) PostponeAlarm(seconds uint) {
 
 	t.toAlarmValue += int32(seconds) // could be negative if tickStep != 1
 	t.lastBeforeAlarmValue += int32(seconds)
+}
+
+// Time to notifify for soon alarm
+func (t *Ticker) AlarmIsSoon() bool {
+	t.mux.Lock()
+	defer t.mux.Unlock()
+
+	return t.lastBeforeAlarmValue == t.beforeAlarmNotification
+
 }
 
 func (t *Ticker) GetValue() uint32 {

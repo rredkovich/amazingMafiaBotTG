@@ -63,9 +63,15 @@ func (g *Game) Play(prepareTime uint32) {
 
 	for !g.State.IsStopped() {
 		currentState := g.State.GetState()
-		if currentState == Preparing && g.ticker.lastBeforeAlarmValue == 30 {
-			g.SendGroupMessage("Игра начинается через 30 секунд")
+		if g.ticker.AlarmIsSoon() {
+			switch currentState {
+			case Preparing:
+				g.SendGroupMessage("Игра начинается через 30 секунд")
+			case DayVoting:
+				g.SendGroupMessage("Голосование закончится через 30 секунд")
+			}
 		}
+
 		if g.ticker.Alarm() {
 			if currentState == Preparing {
 				// TODO !!! Game should be removed from list of games in main thread immideatly after that, memory leak !!!

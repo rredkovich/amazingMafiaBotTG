@@ -215,7 +215,7 @@ func main() {
 
 					from := update.Message.From
 					starter := types.NewTGUser(from.ID, from.UserName, from.FirstName, from.LastName)
-					prepareTime := uint32(15)
+					prepareTime := uint32(45)
 					game := game.NewGame(update.Message.Chat.ID, update.Message.Chat.Title, starter,
 						&messagesFromGames, voteCommandsFromGames)
 					games[game.ChatID] = game
