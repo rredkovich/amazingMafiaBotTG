@@ -1,0 +1,45 @@
+image: docker:19.03.1
+
+services:
+  - docker:19.03.1-dind
+
+variables:
+  # Use TLS https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
+  DOCKER_HOST: tcp://docker:2376
+  DOCKER_TLS_CERTDIR: "/certs"
+  CI_REGISTRY_IMAGE: registry.gitlab.com/rredkovich/amazingmafiabot
+
+deploy_production:
+  stage: deploy
+  only:
+    - master
+    - development
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - TAG_VERSION=$(echo v$(date -u +"%Y-%m-%d")_$(echo $CI_COMMIT_SHORT_SHA))
+    - echo $TAG_VERSION
+    - docker build -t $CI_REGISTRY_IMAGE:$TAG_VERSION --build-arg release_version=$TAG_VERSION .
+    #- docker build --build-arg release_version=$TAG_VERSION -t $CI_REGISTRY_IMAGE:$TAG_VERSION .
+    - docker push $CI_REGISTRY_IMAGE:$TAG_VERSION
+    # for watchtower-based deployment
+    - docker tag $CI_REGISTRY_IMAGE:$TAG_VERSION $CI_REGISTRY_IMAGE:production
+    - docker push $CI_REGISTRY_IMAGE:production
+
+sentry_test_releases:
+  image:
+    name: getsentry/sentry-cli:1.51
+    entrypoint: [""]
+  stage: .post
+  script:
+    # dirty hack to ensure sentry-cli matches origin with repo in it's config
+    # because CI on gitlab but repo is in github
+    - apk add git
+    - git remote remove origin && git remote add origin git@github.com:rredkovich/amazingMafiaBotTG.git
+    - TAG_VERSION=$(echo v$(date -u +"%Y-%m-%d")_$(echo $CI_COMMIT_SHORT_SHA))
+    - sentry-cli releases new -p amazing-mafia-bot-tg "$TAG_VERSION"
+    - sentry-cli releases set-commits "$TAG_VERSION" --auto
+    - sentry-cli releases finalize "$TAG_VERSION"
+    - sentry-cli releases deploys "$TAG_VERSION" new -e production
+  only:
+    - master
+    - development
