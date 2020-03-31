@@ -131,7 +131,7 @@ func (g *Game) ExtendRegistration(seconds uint) (uint, error) {
 	}
 	g.ticker.PostponeAlarm(seconds)
 
-	return uint(g.ticker.toAlarmValue), nil
+	return uint(g.ticker.lastBeforeAlarmValue), nil
 }
 
 // Sends message to group, for all players
